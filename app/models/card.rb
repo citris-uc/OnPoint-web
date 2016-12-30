@@ -1,4 +1,239 @@
 class Card < ActiveRecord::Base
+
+
+  # $scope.getMedsStatusArrays = function(schedule, medications, date_key) {
+  #   var takeMeds = [];
+  #   var skippedMeds = [];
+  #   var completedMeds = [];
+  #   if (medications != null) {
+  #     medications.forEach( function(medication) {
+  #       var med = {}
+  #       //Find the Med
+  #       for(var i = 0; i < $scope.medications.length; i++) {
+  #         if ($scope.medications[i].trade_name == medication) {
+  #           med = $scope.medications[i]
+  #           med.id = $scope.medications[i].$id;
+  #         }
+  #       }
+  #
+  #       var exists = false;
+  #       //var history_date = $scope.medHistory.$ref().key();
+  #
+  #       // If the history reference matches the passed in date then check validity
+  #       //if (date_key == history_date)
+  #       if ($scope.medHistory.hasOwnProperty(date_key)) {
+  #         var medHistory = $scope.medHistory[date_key];
+  #         // for(var i = 0; i < medHistory.length; i++)
+  #         //   var hist = medHistory[i];
+  #         for(hist_id in medHistory) {
+  #           var hist = medHistory[hist_id];
+  #           if (hist.medication_id==med.id && hist.medication_schedule_id==schedule.$id) {
+  #             exists = true;
+  #             if(hist.taken_at != null)
+  #               completedMeds.push(med);
+  #             else if (hist.skipped_at != null)
+  #               skippedMeds.push(med);
+  #             else {
+  #               takeMeds.push(med);
+  #             }
+  #           }
+  #         }
+  #       }
+  #       if (!exists)
+  #         takeMeds.push(med);
+  #     })
+  #   }
+  #   return {unfinished: takeMeds, skipped: skippedMeds, done: completedMeds};
+  # }
+
+  # /*
+  #  * gets the body for each cardClass
+  #  * @param index: this is the medication_schedule ID essentailly
+  #  * TODO: fix medication_schedule ID to be actually ID in firebase, probbaly need to to do when we push med SCheudle to firebase during onboarding
+  #  */
+  # //  $scope.description = function(card, date_key) {
+  # //    type = card.object_type
+  # //    switch(type) {
+  # //      case CARD.CATEGORY.MEDICATIONS_SCHEDULE:
+  # //        return $scope.getMedicationsDescription(card, date_key);
+  # //     //  case CARD.CATEGORY.MEDICATIONS_CABINET :
+  # //     //    return $scope.getMedicationsCabinetDescription(card, date_key);
+  # //      case CARD.CATEGORY.MEDICATIONS_SCHEDULE_CHANGE:
+  # //       return 'Edited Medication Schedule';
+  # //      default:
+  # //        return [""];
+  # //    } // end switch
+  # //  }
+
+  # TODO: Convert medications to...
+  #   $scope.getMedicationsDescription = function(card, date_key) {
+  #    var schedule = $scope.findMedicationScheduleForCard(card);
+  #    if (schedule == null) return;
+  #    //var date_key = card.shown_at.substring(0,10);
+  #
+  #    var medications = schedule.medications;
+  #    var medStatus = $scope.getMedsStatusArrays(schedule, medications, date_key);
+  #    var takeMeds = medStatus.unfinished;
+  #    var skippedMeds = medStatus.skipped;
+  #    var completedMeds = medStatus.done;
+  #
+  #    // Create a string for each line for Take/Skipped/Completed meds
+  #    // TODO -- is there a clean way to do this in the UI to filter?
+  #    //         possible to have different UI templates depending on card category?
+  #    string = "";
+  #    if (takeMeds.length > 0) {
+  #     string += "You need to take ";
+  #     string += $scope.constructMedItemString(takeMeds);
+  #     string += ". ";
+  #   }
+  #
+  #   if (completedMeds.length > 0) {
+  #    string += "So far, you've taken "
+  #    string += $scope.constructMedItemString(completedMeds);
+  #    if (skippedMeds.length == 0) string += ".";
+  #   }
+  #
+  #    if (skippedMeds.length > 0) {
+  #      if (completedMeds.length > 0)
+  #       string += " and you've skipped "
+  #      else
+  #       string += " You've skipped "
+  #       string += $scope.constructMedItemString(skippedMeds);
+  #       string += ".";
+  #    }
+  #
+  #    if (takeMeds.length == 0 && completedMeds.length == 0 && skippedMeds.length == 0) {
+  #      string += "You have no medications scheduled for this time.";
+  #    }
+  #    return string;
+  # }
+ #  $scope.constructMedItemString = function(itemsArray) {
+ #    var str = "";
+ #    for (var i = 0; i < itemsArray.length; i++) {
+ #      if (i != 0) str += ", ";
+ #      if (i != 0 && i == itemsArray.length - 1) str += " and ";
+ #      str += itemsArray[i].trade_name;
+ #    }
+ #    return str;
+ #  }
+ #
+ # $scope.constructItemString = function(itemsArray) {
+ #   var str = "";
+ #   for (var i = 0; i < itemsArray.length; i++) {
+ #     if (i != 0) str += ", ";
+ #     if (i != 0 && i == itemsArray.length - 1) str += " and ";
+ #     str += itemsArray[i];
+ #   }
+ #   return str;
+ # }
+  def description
+  end
+
+  # TODO:
+  # $scope.completeFinishedMedications = function(card, date_key) {
+  #   if (card.completed_at != null || card.archived_at != null) return;
+  #
+  #   var schedule = $scope.findMedicationScheduleForCard(card)
+  #   if (schedule == null) return;
+  #
+  #   var medications = schedule.medications;
+  #   if (medications == null) return;
+  #
+  #   var now = (new Date()).toISOString();
+  #   var medStatus     = $scope.getMedsStatusArrays(schedule, medications, date_key);
+  #   var takeMeds      = medStatus.unfinished;
+  #   var skippedMeds   = medStatus.skipped;
+  #   var completedMeds = medStatus.done;
+  #
+  #   if (takeMeds.length == 0 && skippedMeds.length==0) {
+  #     Card.complete(card);
+  #   }
+  # }
+
+  def complete_card
+  end
+
+  # TODO:
+  #   $scope.statusClass = function(card, date_key) {
+  #   // $scope.checkCardComplete(card, date_key);
+  #   // Return cardClass: urgent/active/completed
+  #   if(card.type == CARD.TYPE.REMINDER)
+  #     return "badge-royal";
+  #   if (card.completed_at == null) {
+  #     if (card.type == CARD.TYPE.URGENT) {
+  #       return "badge-assertive";
+  #     } else {
+  #       var timeCutoff = new Date();
+  #       timeCutoff.setHours(timeCutoff.getHours()+3);
+  #       var cardTime = new Date(card.shown_at);
+  #       // If shown_at time is within 3 hours of now, mark card as "In Progress"
+  #       if (cardTime < timeCutoff) {
+  #         return "badge-energized";
+  #       } else {
+  #         return "badge-calm";
+  #       }
+  #
+  #     }
+  #   } else {
+  #     return "badge-balanced";
+  #   }
+  # }
+  def status_class
+  end
+
+
+  # TODO:
+  # $scope.statusText = function(card, date_key) {
+  #   // $scope.checkCardComplete(card, date_key);
+  #   // Return cardClass: urgent/active/completed
+  #   if (card.type==CARD.TYPE.REMINDER) {
+  #     return 'Reminder';
+  #   }
+  #   if (card.completed_at == null) {
+  #     if (card.type == CARD.TYPE.URGENT) {
+  #       return "Needs attention";
+  #     } else {
+  #       var timeCutoff = new Date();
+  #       timeCutoff.setHours(timeCutoff.getHours()+3);
+  #       var cardTime = new Date(card.shown_at);
+  #
+  #       // If shown_at time is within 3 hours of now, mark card as "In Progress"
+  #       if (cardTime < timeCutoff) {
+  #         return "In progress";
+  #       } else {
+  #         return "Upcoming";
+  #       }
+  #     }
+  #   } else {
+  #     return "Completed";
+  #   }
+  # }
+  #
+  def status_text
+  end
+
+  def scheduled_at
+    # {
+    #   "archived_at":"2016-12-30T21:48:10.957Z",
+    #   "completed_at":"2016-12-30T21:43:33.524Z",
+    #   "created_at":"2016-12-30T01:15:39.300Z",
+    #   "num_comments":0,
+    #   "object_id":"-K_1l5MScJdm1tLxwpWr",
+    #   "object_type":"medications_schedule",
+    #   "shown_at":"2016-12-29T16:00:38.831Z",
+    #   "type":"action",
+    #   "updated_at":"2016-12-30T21:48:10.957Z"
+    # }
+  end
+
+  def self.title(card)
+    return "Medication Reminder"
+  end
+
+  def self.formatted_timestamp(card)
+
+  end
+
   # uid = 1dae2ad5-9d3c-407c-9d8e-6f3796f0a2ec
 
   def self.sava(uid, date, data)
