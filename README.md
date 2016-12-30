@@ -1,24 +1,15 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+### Understanding how Firebase works with Rails
+They don't have native admin support for Auth in Rails (Java or Node.js), but you can access the database using legacy keys.
 
-Things you may want to cover:
+This answer was the insight into the above: https://github.com/ktamas77/firebase-php/issues/42
 
-* Ruby version
+And here's a guide to setting up Admin SDK: https://firebase.google.com/docs/admin/setup
 
-* System dependencies
+### Verifying identity on Rails
+Firebase doesn't support native id verification, so we have to write our own
+JWT parser. Source: https://firebase.google.com/docs/auth/admin/verify-id-tokens
 
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+Here is a detailed setup on getting ID verification working with JWT + Rails:
+https://groups.google.com/forum/#!topic/firebase-talk/iefJWQ9LMQE
