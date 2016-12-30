@@ -22,4 +22,4 @@
 
 # Ignore application configuration
 # NOTE: Leaving this in to simplify development
-# /config/application.yml
+config/application.yml
