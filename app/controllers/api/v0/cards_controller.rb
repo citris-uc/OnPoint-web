@@ -23,6 +23,10 @@ class API::V0::CardsController < API::V0::BaseController
     if params[:when] == "today"
       @cards = Card.find_by_uid_and_date(uid, Time.zone.now.strftime("%Y-%m-%d"))
     end
+
+    @uid = uid
+    # Card.find_schedule_by_uid_and_card(uid, "test")
+    # Card.generate_cards_for_date(uid, Time.zone.now.strftime("%Y-%m-%d"))
   end
 
 end
