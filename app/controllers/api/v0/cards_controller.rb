@@ -22,7 +22,15 @@ class API::V0::CardsController < API::V0::BaseController
     # At this point, we have the UID. Let's query the cards.
     if params[:when] == "today"
       @cards = Card.find_by_uid_and_date(uid, Time.zone.now.strftime("%Y-%m-%d"))
+    elsif params[:when] == "tomorrow"
+      @cards = Card.find_by_uid_and_date(uid, Time.zone.tomorrow.strftime("%Y-%m-%d"))
+    elsif params[:when] == "past"
+      @cards = Card.find_past_by_uid(uid)
     end
+
+    @uid = uid
+    # Card.find_schedule_by_uid_and_card(uid, "test")
+    # Card.generate_cards_for_date(uid, Time.zone.now.strftime("%Y-%m-%d"))
   end
 
 end

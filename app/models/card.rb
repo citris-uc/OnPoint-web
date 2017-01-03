@@ -2,131 +2,108 @@ class Card < ActiveRecord::Base
 
 
   # $scope.getMedsStatusArrays = function(schedule, medications, date_key) {
-  #   var takeMeds = [];
-  #   var skippedMeds = [];
-  #   var completedMeds = [];
-  #   if (medications != null) {
-  #     medications.forEach( function(medication) {
-  #       var med = {}
-  #       //Find the Med
-  #       for(var i = 0; i < $scope.medications.length; i++) {
-  #         if ($scope.medications[i].trade_name == medication) {
-  #           med = $scope.medications[i]
-  #           med.id = $scope.medications[i].$id;
-  #         }
-  #       }
-  #
-  #       var exists = false;
-  #       //var history_date = $scope.medHistory.$ref().key();
-  #
-  #       // If the history reference matches the passed in date then check validity
-  #       //if (date_key == history_date)
-  #       if ($scope.medHistory.hasOwnProperty(date_key)) {
-  #         var medHistory = $scope.medHistory[date_key];
-  #         // for(var i = 0; i < medHistory.length; i++)
-  #         //   var hist = medHistory[i];
-  #         for(hist_id in medHistory) {
-  #           var hist = medHistory[hist_id];
-  #           if (hist.medication_id==med.id && hist.medication_schedule_id==schedule.$id) {
-  #             exists = true;
-  #             if(hist.taken_at != null)
-  #               completedMeds.push(med);
-  #             else if (hist.skipped_at != null)
-  #               skippedMeds.push(med);
-  #             else {
-  #               takeMeds.push(med);
-  #             }
-  #           }
-  #         }
-  #       }
-  #       if (!exists)
-  #         takeMeds.push(med);
-  #     })
-  #   }
-  #   return {unfinished: takeMeds, skipped: skippedMeds, done: completedMeds};
-  # }
+  def self.get_med_status_arrays(uid, schedule, medications, date_key)
+    take     = []
+    skipped   = []
+    completed = []
 
-  # /*
-  #  * gets the body for each cardClass
-  #  * @param index: this is the medication_schedule ID essentailly
-  #  * TODO: fix medication_schedule ID to be actually ID in firebase, probbaly need to to do when we push med SCheudle to firebase during onboarding
-  #  */
-  # //  $scope.description = function(card, date_key) {
-  # //    type = card.object_type
-  # //    switch(type) {
-  # //      case CARD.CATEGORY.MEDICATIONS_SCHEDULE:
-  # //        return $scope.getMedicationsDescription(card, date_key);
-  # //     //  case CARD.CATEGORY.MEDICATIONS_CABINET :
-  # //     //    return $scope.getMedicationsCabinetDescription(card, date_key);
-  # //      case CARD.CATEGORY.MEDICATIONS_SCHEDULE_CHANGE:
-  # //       return 'Edited Medication Schedule';
-  # //      default:
-  # //        return [""];
-  # //    } // end switch
-  # //  }
+    medications.each do |medname|
+      med = Medication.find_by_uid_and_name(uid, medname)
 
-  # TODO: Convert medications to...
+      exists = false
+      medication_history = MedicationHistory.find_by_uid_and_date(uid, date_key)
+      if medication_history.present?
+        if med[:id] == medication_history.values["medication_id"] && schedule.key == medication_history[:data]["medication_schedule_id"]
+
+          exists = true
+          completed << med if medication_history[:data]["taken_at"].present?
+          take      << med if medication_history[:data]["taken_at"].blank?
+          skipped   << med if medication_history[:data]["skipped_at"].present?
+        end
+      end
+
+      if exists == false
+        take << med
+      end
+    end
+
+    return {
+      :unfinished => take,
+      :skipped    => skipped,
+      :done       => completed
+    }
+  end
+
+
+  # $scope.findMedicationScheduleForCard = function(card) {
+  def self.find_schedule_by_uid_and_card(uid, card)
+    schedules = MedicationSchedule.find_by_uid(uid)
+    if schedules[card["object_id"]].blank?
+      raise API::V0::Error.new("We couldn't find a matching schedule!") and return
+    else
+      schedule = schedules[card["object_id"]]
+    end
+
+    return schedule
+  end
+
   #   $scope.getMedicationsDescription = function(card, date_key) {
-  #    var schedule = $scope.findMedicationScheduleForCard(card);
-  #    if (schedule == null) return;
-  #    //var date_key = card.shown_at.substring(0,10);
-  #
-  #    var medications = schedule.medications;
-  #    var medStatus = $scope.getMedsStatusArrays(schedule, medications, date_key);
-  #    var takeMeds = medStatus.unfinished;
-  #    var skippedMeds = medStatus.skipped;
-  #    var completedMeds = medStatus.done;
-  #
-  #    // Create a string for each line for Take/Skipped/Completed meds
-  #    // TODO -- is there a clean way to do this in the UI to filter?
-  #    //         possible to have different UI templates depending on card category?
-  #    string = "";
-  #    if (takeMeds.length > 0) {
-  #     string += "You need to take ";
-  #     string += $scope.constructMedItemString(takeMeds);
-  #     string += ". ";
-  #   }
-  #
-  #   if (completedMeds.length > 0) {
-  #    string += "So far, you've taken "
-  #    string += $scope.constructMedItemString(completedMeds);
-  #    if (skippedMeds.length == 0) string += ".";
-  #   }
-  #
-  #    if (skippedMeds.length > 0) {
-  #      if (completedMeds.length > 0)
-  #       string += " and you've skipped "
-  #      else
-  #       string += " You've skipped "
-  #       string += $scope.constructMedItemString(skippedMeds);
-  #       string += ".";
-  #    }
-  #
-  #    if (takeMeds.length == 0 && completedMeds.length == 0 && skippedMeds.length == 0) {
-  #      string += "You have no medications scheduled for this time.";
-  #    }
-  #    return string;
-  # }
- #  $scope.constructMedItemString = function(itemsArray) {
- #    var str = "";
- #    for (var i = 0; i < itemsArray.length; i++) {
- #      if (i != 0) str += ", ";
- #      if (i != 0 && i == itemsArray.length - 1) str += " and ";
- #      str += itemsArray[i].trade_name;
- #    }
- #    return str;
- #  }
- #
- # $scope.constructItemString = function(itemsArray) {
- #   var str = "";
- #   for (var i = 0; i < itemsArray.length; i++) {
- #     if (i != 0) str += ", ";
- #     if (i != 0 && i == itemsArray.length - 1) str += " and ";
- #     str += itemsArray[i];
- #   }
- #   return str;
- # }
-  def description
+  def self.description(uid, card)
+    # TODO: Is the date key supposd to be toda?
+    date_key = Time.zone.now.strftime("%Y-%m-%d")
+
+    schedule = self.find_schedule_by_uid_and_card(uid, card)
+    return nil if schedule.blank?
+
+    # At this point, we have a schedule.
+    medications  = schedule["medications"]
+    med_status   = self.get_med_status_arrays(uid, schedule, medications, date_key)
+    take_meds    = med_status[:unfinished]
+    skipped_meds = med_status[:skipped]
+    completed_meds = med_status[:done]
+
+    string = ""
+    if take_meds.length > 0
+      string += "You need to take "
+      string += self.construct_med_item_string(take_meds)
+      string += ". "
+    end
+
+    if completed_meds.length > 0
+      string += "So far, you've taken "
+      string += self.construct_med_item_string(completed_meds)
+      if skipped_meds.length == 0
+        string += "."
+      end
+    end
+
+    if skipped_meds.length > 0
+      if completed_meds.length > 0
+        string += " and you've skipped "
+      else
+        string += " You've skipped "
+        string += self.construct_med_item_string(skipped_meds)
+        string += "."
+      end
+    end
+
+    if take_meds.length == 0 && completed_meds.length == 0 && skipped_meds.length == 0
+      string += "You have no medications scheduled for this time."
+    end
+
+    return string
+  end
+
+  #  $scope.constructMedItemString = function(itemsArray) {
+  def self.construct_med_item_string(items_array)
+    str = ""
+    items_array.each_with_index do |item, index|
+      str += ", " if index != 0
+      # raise "item: #{item.inspect}\n\n\n item.values = #{item[:data]}"
+      str += item[:data]["trade_name"]
+    end
+
+    return str
   end
 
   # TODO:
@@ -149,69 +126,48 @@ class Card < ActiveRecord::Base
   #     Card.complete(card);
   #   }
   # }
-
   def complete_card
   end
 
-  # TODO:
-  #   $scope.statusClass = function(card, date_key) {
-  #   // $scope.checkCardComplete(card, date_key);
-  #   // Return cardClass: urgent/active/completed
-  #   if(card.type == CARD.TYPE.REMINDER)
-  #     return "badge-royal";
-  #   if (card.completed_at == null) {
-  #     if (card.type == CARD.TYPE.URGENT) {
-  #       return "badge-assertive";
-  #     } else {
-  #       var timeCutoff = new Date();
-  #       timeCutoff.setHours(timeCutoff.getHours()+3);
-  #       var cardTime = new Date(card.shown_at);
-  #       // If shown_at time is within 3 hours of now, mark card as "In Progress"
-  #       if (cardTime < timeCutoff) {
-  #         return "badge-energized";
-  #       } else {
-  #         return "badge-calm";
-  #       }
-  #
-  #     }
-  #   } else {
-  #     return "badge-balanced";
-  #   }
-  # }
-  def status_class
+  def self.status_class(card)
+    if card["type"] == "reminder"
+      return "badge-royal"
+    end
+
+    if card["completed_at"].blank?
+      if card["type"] == "urgent"
+        return "badge-assertive"
+      else
+        now = Time.zone.now
+        shown_at = Time.zone.parse(card["shown_at"])
+        return "badge-energized" if (now - shown_at).abs <= 3.hours
+        return "badge-calm"
+      end
+    else
+      return "badge-balanced"
+    end
   end
 
+  def self.status_text(card)
+    if card["type"] == "reminder"
+      return "Reminder"
+    end
 
-  # TODO:
-  # $scope.statusText = function(card, date_key) {
-  #   // $scope.checkCardComplete(card, date_key);
-  #   // Return cardClass: urgent/active/completed
-  #   if (card.type==CARD.TYPE.REMINDER) {
-  #     return 'Reminder';
-  #   }
-  #   if (card.completed_at == null) {
-  #     if (card.type == CARD.TYPE.URGENT) {
-  #       return "Needs attention";
-  #     } else {
-  #       var timeCutoff = new Date();
-  #       timeCutoff.setHours(timeCutoff.getHours()+3);
-  #       var cardTime = new Date(card.shown_at);
-  #
-  #       // If shown_at time is within 3 hours of now, mark card as "In Progress"
-  #       if (cardTime < timeCutoff) {
-  #         return "In progress";
-  #       } else {
-  #         return "Upcoming";
-  #       }
-  #     }
-  #   } else {
-  #     return "Completed";
-  #   }
-  # }
-  #
-  def status_text
+    if card["completed_at"].blank?
+      if card["type"] == "urgent"
+        return "Needs attention"
+      else
+        now = Time.zone.now
+        shown_at = Time.zone.parse(card["shown_at"])
+        return "In Progress" if (now - shown_at).abs <= 3.hours
+        return "Upcoming"
+      end
+    else
+      return "Completed"
+    end
   end
 
+  # TODO
   def scheduled_at
     # {
     #   "archived_at":"2016-12-30T21:48:10.957Z",
@@ -313,8 +269,13 @@ class Card < ActiveRecord::Base
 
   def self.find_by_uid_and_date(uid, date_string)
     firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
-    puts "patients/#{uid}cards/#{date_string}"
     return firebase.get("patients/#{uid}/cards/#{date_string}").body
+  end
+
+  # TODO: Calculate past.
+  def self.find_past_by_uid(uid)
+    firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
+    return firebase.get("patients/#{uid}/cards/#{Time.zone.yesterday.strftime('%Y-%m-%d')}").body
   end
 
   def self.update_card_for_date(uid, date_string, object_id, object_type, slot)
