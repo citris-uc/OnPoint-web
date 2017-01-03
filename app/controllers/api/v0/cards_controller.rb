@@ -24,6 +24,8 @@ class API::V0::CardsController < API::V0::BaseController
       @cards = Card.find_by_uid_and_date(uid, Time.zone.now.strftime("%Y-%m-%d"))
     elsif params[:when] == "tomorrow"
       @cards = Card.find_by_uid_and_date(uid, Time.zone.tomorrow.strftime("%Y-%m-%d"))
+    elsif params[:when] == "past"
+      @cards = Card.find_past_by_uid(uid)
     end
 
     @uid = uid

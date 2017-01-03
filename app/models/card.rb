@@ -269,8 +269,13 @@ class Card < ActiveRecord::Base
 
   def self.find_by_uid_and_date(uid, date_string)
     firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
-    puts "patients/#{uid}cards/#{date_string}"
     return firebase.get("patients/#{uid}/cards/#{date_string}").body
+  end
+
+  # TODO: Calculate past.
+  def self.find_past_by_uid(uid)
+    firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
+    return firebase.get("patients/#{uid}/cards/#{Time.zone.yesterday.strftime('%Y-%m-%d')}").body
   end
 
   def self.update_card_for_date(uid, date_string, object_id, object_type, slot)
