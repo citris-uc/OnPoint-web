@@ -1,6 +1,11 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
 
+  # Skip checking forgery for JSON requests (e.g. mobile app).
+  # See: http://api.rubyonrails.org/classes/ActionController/RequestForgeryProtection.html
+  protect_from_forgery unless: -> { request.format.json? }
+
+
   #-------------------------------------------------------------------------------------------------
 
   # This allows us to cleanly handle all possible API errors. If something happens, we simply

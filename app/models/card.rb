@@ -1,4 +1,7 @@
 class Card < ActiveRecord::Base
+  def self.format_date(date)
+    return date.strftime("%Y-%m-%d")
+  end
 
 
   # $scope.getMedsStatusArrays = function(schedule, medications, date_key) {
@@ -39,7 +42,7 @@ class Card < ActiveRecord::Base
   def self.find_schedule_by_uid_and_card(uid, card)
     schedules = MedicationSchedule.find_by_uid(uid)
     if schedules[card["object_id"]].blank?
-      raise API::V0::Error.new("We couldn't find a matching schedule!") and return
+      raise API::V0::Error.new("We couldn't find a matching schedule!", 403) and return
     else
       schedule = schedules[card["object_id"]]
     end
@@ -191,10 +194,9 @@ class Card < ActiveRecord::Base
   end
 
   # uid = 1dae2ad5-9d3c-407c-9d8e-6f3796f0a2ec
-
-  def self.sava(uid, date, data)
+  def self.sava(uid, date_string, data)
     firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
-    path = "patients/#{uid}/cards/#{date}"
+    path = "patients/#{uid}/cards/#{date_string}"
     puts "data: #{data}"
     response = firebase.push(path, data)
     puts "response: #{response.inspect}"
@@ -209,11 +211,19 @@ class Card < ActiveRecord::Base
 
   end
 
-  def self.generate_cards_for_date(uid, date)
-    beginning_of_day = Time.zone.now.beginning_of_day
-    end_of_day       = Time.zone.now.end_of_day
 
-    cards = self.find_by_uid_and_date(uid, date)
+  def self.destroy_all_from(uid, date)
+    firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
+
+    date = date.beginning_of_day
+    [date, date + 1.day, date + 2.days, date + 3.days].each do |d|
+      date_string = Card.format_date(d)
+      firebase.delete("patients/#{uid}/cards/#{date_string}")
+    end
+  end
+
+  def self.generate_cards_for_date(uid, date_string)
+    cards = self.find_by_uid_and_date(uid, date_string)
     if cards.nil?
       # that.createFromObjectForDate(CARD.CATEGORY.MEDICATIONS_SCHEDULE, date)
       # date = date
@@ -221,10 +231,10 @@ class Card < ActiveRecord::Base
       # var defaultRef = MedicationSchedule.ref();
       #     this.createFromSchedule(defaultRef, object_type, date);
       medication_schedule = MedicationSchedule.find_by_uid(uid)
+      return if medication_schedule.blank?
       # this.createFromSchedule(medication_schedule, 'medication_schedule', date);
 
-      time = Time.zone.parse(date)
-      wday = time.wday
+      wday = Time.zone.parse(date_string).wday
       # ["-K_1l5MScJdm1tLxwpWr", {"days"=>[true, true, true, true, true, true, true], "medications"=>["Lasix", "Toprol XL", "Zestril", "Coumadin", "Riomet"], "slot"=>"Morning", "time"=>"08:00"}]
       medication_schedule.each do |id, schedule|
         puts "id: #{id}"
@@ -239,7 +249,7 @@ class Card < ActiveRecord::Base
 
 
           # TODO: card push date, card
-          Card.sava(uid, date, card)
+          Card.sava(uid, date_string, card)
         end
       end
 
