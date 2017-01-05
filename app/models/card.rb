@@ -42,7 +42,7 @@ class Card < ActiveRecord::Base
   def self.find_schedule_by_uid_and_card(uid, card)
     schedules = MedicationSchedule.find_by_uid(uid)
     if schedules[card["object_id"]].blank?
-      raise API::V0::Error.new("We couldn't find a matching schedule!") and return
+      raise API::V0::Error.new("We couldn't find a matching schedule!", 403) and return
     else
       schedule = schedules[card["object_id"]]
     end
