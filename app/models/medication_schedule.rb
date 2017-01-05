@@ -4,4 +4,11 @@ class MedicationSchedule < ActiveRecord::Base
     firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
     return firebase.get("patients/#{uid}/medication_schedule").body
   end
+
+  # $scope.findMedicationScheduleForCard = function(card) {
+  def self.find_by_card(uid, card)
+    schedules = self.find_by_uid(uid)
+    return schedules[card["object_id"]]
+  end
+
 end
