@@ -32,39 +32,6 @@ class Card
   end
 
 
-  # $scope.getMedsStatusArrays = function(schedule, medications, date_key) {
-  def self.get_med_status_arrays(uid, schedule, medications, date_key)
-    take     = []
-    skipped   = []
-    completed = []
-
-    medications.each do |medname|
-      med = Medication.find_by_uid_and_name(uid, medname)
-
-      exists = false
-      medication_history = MedicationHistory.find_by_uid_and_date(uid, date_key)
-      if medication_history.present?
-        if med[:id] == medication_history.values["medication_id"] && schedule.key == medication_history[:data]["medication_schedule_id"]
-
-          exists = true
-          completed << med if medication_history[:data]["taken_at"].present?
-          take      << med if medication_history[:data]["taken_at"].blank?
-          skipped   << med if medication_history[:data]["skipped_at"].present?
-        end
-      end
-
-      if exists == false
-        take << med
-      end
-    end
-
-    return {
-      :unfinished => take,
-      :skipped    => skipped,
-      :done       => completed
-    }
-  end
-
   #   $scope.getMedicationsDescription = function(card, date_key) {
   def self.description(uid, card)
     # TODO: Is the date key supposd to be toda?
@@ -74,11 +41,14 @@ class Card
     return nil if schedule.blank?
 
     # At this point, we have a schedule.
-    medications  = schedule["medications"]
-    med_status   = self.get_med_status_arrays(uid, schedule, medications, date_key)
-    take_meds    = med_status[:unfinished]
-    skipped_meds = med_status[:skipped]
+    medications    = schedule["medications"]
+    med_status     = Medication.segment_by_state(uid, card["object_id"], medications, date_key)
+
+    take_meds      = med_status[:unfinished]
+    skipped_meds   = med_status[:skipped]
     completed_meds = med_status[:done]
+
+
 
     string = ""
     if take_meds.length > 0
@@ -98,6 +68,9 @@ class Card
     if skipped_meds.length > 0
       if completed_meds.length > 0
         string += " and you've skipped "
+        string += self.construct_med_item_string(skipped_meds)
+        string += "."
+
       else
         string += " You've skipped "
         string += self.construct_med_item_string(skipped_meds)
@@ -113,12 +86,12 @@ class Card
   end
 
   #  $scope.constructMedItemString = function(itemsArray) {
-  def self.construct_med_item_string(items_array)
+  def self.construct_med_item_string(medications)
     str = ""
-    items_array.each_with_index do |item, index|
+    medications.each_with_index do |item, index|
       str += ", " if index != 0
       # raise "item: #{item.inspect}\n\n\n item.values = #{item[:data]}"
-      str += item[:data]["trade_name"]
+      str += item["trade_name"]
     end
 
     return str
