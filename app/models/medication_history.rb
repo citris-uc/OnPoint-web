@@ -5,6 +5,16 @@ class MedicationHistory < ActiveRecord::Base
     return firebase.get("patients/#{uid}/medication_histories").body
   end
 
+  def self.create(uid, date_string, data)
+    firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
+    response = firebase.push("patients/#{uid}/medication_histories/#{date_string}", data)
+  end
+
+  def self.update(uid, date_string, medication_history_id, data)
+    firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
+    puts "medication_history_id, = #{medication_history_id}\n\n\n"
+    response = firebase.update("patients/#{uid}/medication_histories/#{date_string}/#{medication_history_id}", data)
+  end
 
   def self.find_by_uid_and_date(uid, date_string)
     histories = self.find_by_uid(uid)
