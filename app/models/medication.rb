@@ -20,8 +20,16 @@ class Medication < ActiveRecord::Base
 
     history     = MedicationHistory.find_all_by_date_and_schedule_id(uid, date_key, schedule_id)
     medications = Medication.all(uid)
+    med_names ||= []
+    meds_for_schedule = medications.find_all {|k, data| puts "data: #{data}"; med_names.include?(data["trade_name"])}.map {|el| el[1]}
+    if history.blank?
+      return {
+        :unfinished => meds_for_schedule,
+        :skipped    => [],
+        :done       => []
+      }
+    end
 
-    meds_for_schedule = medications.find_all {|k, data| med_names.include?(data["trade_name"])}.map {|el| el[1]}
 
     history.each do |hist|
       data = hist[1]
