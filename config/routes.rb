@@ -6,6 +6,12 @@ Rails.application.routes.draw do
       resources :cards, :only => [:index] do
         delete :force, :on => :collection
       end
+
+      resources :medications, :only => [] do
+        put :decide, :on => :collection
+      end
+
+      resource :medication_history, :only => [:show], :controller => :medication_history
     end
   end
 
