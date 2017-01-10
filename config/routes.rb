@@ -7,8 +7,11 @@ Rails.application.routes.draw do
         delete :force, :on => :collection
       end
 
-      resources :medications, :only => [] do
+      resources :medications, :only => [:create] do
         put :decide, :on => :collection
+      end
+
+      resources :medication_schedule, :only => [:create] do
       end
 
       resource :medication_history, :only => [:show], :controller => :medication_history
