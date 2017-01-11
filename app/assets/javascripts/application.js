@@ -18,7 +18,6 @@
 //= require "angular/ui-notification"
 //= require "app/app"
 //= require_tree ./app/controllers/
-//= require_tree ./app/directives/
 //= require_tree ./app/services
 //= require bootstrap/bootstrap
 //= require underscore/underscore
