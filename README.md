@@ -13,3 +13,38 @@ JWT parser. Source: https://firebase.google.com/docs/auth/admin/verify-id-tokens
 
 Here is a detailed setup on getting ID verification working with JWT + Rails:
 https://groups.google.com/forum/#!topic/firebase-talk/iefJWQ9LMQE
+
+
+### RxNorm
+Rx API is actually an API system of multiple systems:
+
+RxNorm - Main API for fetching various information about a drug
+RxTerms -
+DailyMed (https://dailymed.nlm.nih.gov/dailymed/index.cfm) - exposes information on the drugs (purpose, risks, etc)
+
+RxNorm API allows the user to search by approximate term using this endpoint:
+
+```
+https://rxnav.nlm.nih.gov/RxNormAPIs.html#uLink=RxNorm_REST_getApproximateMatch
+```
+
+The response is an array of matches, ordered by "score", with a corresponding rxcui, which is RxNorm's Unique Identifier in the system. We can get all properties of a drug using that rxcui like so:
+
+```
+https://rxnav.nlm.nih.gov/REST/rxcui/856999/allProperties.json?prop=all
+```
+
+One of these properties is "RxNorm Name", which I think is what people mean when they say "I use XYZ drug" (e.g. Metformin, Zestril, Lortab). Some drugs have alternative names.
+
+The RxNorm API actually does NOT have image information. A separate API, RxImage, contains that information, and we can again use rxcui to access pill images:
+
+```
+https://rximage.nlm.nih.gov/api/rximage/1/rxnav?rxcui=856999
+```
+
+#### Remaining questions
+1. What is the mapping between Medication barcode and RxNorm? This may help: https://rxnav.nlm.nih.gov/RxNormAPIs.html#uLink=RxNorm_REST_findRxcuiById
+2. There are immense permutations for arbitrary search terms like hydrocodone. This is primarily because of the combinations you can get with Branded drugs, and branded dose groups. All possible Term Types are listed here: https://www.nlm.nih.gov/research/umls/rxnorm/docs/2015/appendix5.html. What should
+we expect the patient to be exposed to? Most likely SBD? To get an idea, simply visit https://mor.nlm.nih.gov/RxNav/search?searchBy=String&searchTerm=HYDROcodone and look at the right-hand side.
+3. Is it possible the dosage will go outside of a pre-defined branded drug dose? E.g. doctors manipulates the mg dosage (probably not).
+4. How can we leverage and use DailyMed?

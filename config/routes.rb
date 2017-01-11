@@ -3,6 +3,9 @@ Rails.application.routes.draw do
 
   namespace :api, :defaults => { :format => :json } do
     namespace :v0 do
+      resource :drugs, :only => [:show] do
+      end
+
       resources :cards, :only => [:index] do
         delete :force, :on => :collection
       end
@@ -17,6 +20,12 @@ Rails.application.routes.draw do
       resource :medication_history, :only => [:show], :controller => :medication_history
     end
   end
+
+
+  resource :drugs, :only => [:show]
+
+
+  root                :to => "drugs#show"
 
 
   require 'sidekiq/web'
