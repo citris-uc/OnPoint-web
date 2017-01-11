@@ -63,7 +63,7 @@ class Drug
     candidates = req.parsed_response["approximateGroup"]["candidate"]
 
     # Candidates come with a score and a rank. We select and return all candidates with rank=1
-    return candidates.find_all {|c| c["rank"] == "1"}.uniq
+    return candidates.find_all {|c| c["rank"] == "1"}.uniq {|c| c["rxcui"]}
   end
 
   # https://rxnav.nlm.nih.gov/REST/rxcui/856999/allProperties.json?prop=all
