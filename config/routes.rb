@@ -19,6 +19,12 @@ Rails.application.routes.draw do
   end
 
 
+  resource :drugs, :only => [:show]
+
+
+  root                :to => "drugs#show"
+
+
   require 'sidekiq/web'
   mount Sidekiq::Web => '/82af180466c5'
 
