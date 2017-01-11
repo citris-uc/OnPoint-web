@@ -42,12 +42,22 @@
 
 
 - content_for :page_content do
-  .page-header
-    %h1 Drugs API
-  %form{"ng-submit" => "search()"}
-    .input-group.participant-search.input-group-lg{:style => "margin-bottom: 20px;"}
-      %span.input-group-addon
-        .fa.fa-search
-      %input.form-control{:placeholder => "E.g. lortab", :type => "text", "ng-model" => "params.search"}/
-      %span.input-group-btn
-        %button.btn.btn-success{:type => "submit", "ng-class" => "{'disabled': !params.search}"} Search
+  %div{"ng-controller" => "drugsCtrl"}
+    .page-header
+      %h1 Drugs API
+    %form{"ng-submit" => "search()"}
+      .input-group.participant-search.input-group-lg{:style => "margin-bottom: 20px;"}
+        %span.input-group-addon
+          .fa.fa-search
+        %input.form-control{:placeholder => "Search for an ingredient, brand name, clinical drug component, etc (e.g. hydrocodone, cozaar)", :type => "text", "ng-model" => "params.search"}/
+        %span.input-group-btn
+          %button.btn.btn-success{:type => "submit", "ng-class" => "{'disabled': !params.search}"} Search
+
+    %h1.text-center{"ng-if" => "state.loading"}
+      %i.fa.fa-spin.fa-refresh
+    %ul.list-group{"ng-repeat" => "drug in drugs"}
+      %li.list-group-item.active
+        RxCui: {{drug.rxcui}} ({{drug.names}})
+      %li.list-group-item{"ng-repeat" => "brand in drug.sbd"}
+        %h4 {{brand.name}}
+        %p {{brand.synonym}}
