@@ -13,6 +13,7 @@
 //= require jquery
 //= require jquery_ujs
 //= require "angular/angular"
+//= require "angular/angular-resource"
 //= require "angular/ui-router"
 //= require "angular/ui-notification"
 //= require "app/app"
