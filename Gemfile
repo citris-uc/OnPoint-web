@@ -8,6 +8,7 @@ gem "jwt", "~> 1.5.4"
 
 gem "foreman"
 gem 'haml'
+gem "httparty", "~> 0.11"
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 5.0.0', '>= 5.0.0.1'
