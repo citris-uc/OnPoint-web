@@ -58,13 +58,6 @@ Rails.application.configure do
   # Logging
   #-----------------------------------------------------------------------------------------------
 
-  STDOUT.sync = true
-  logger = Logger.new(STDOUT)
-  logger.level = 0
-  Rails.logger = Rails.application.config.logger = logger
-  ActiveRecord::Base.logger = Rails.logger
-
-
   # See: https://github.com/cyu/rack-cors
   # NOTE: THis is only needed in development.rb because production Ionic is
   # using file:// and not http://
