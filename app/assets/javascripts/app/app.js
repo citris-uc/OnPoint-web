@@ -1,12 +1,12 @@
 (function () {
-  angular.module('clovi.directives', ["ui-notification"]);
-  angular.module('clovi.controllers', []);
-  angular.module('clovi.services', []);
+  angular.module('onpoint.directives', ["ui-notification"]);
+  angular.module('onpoint.controllers', []);
+  angular.module('onpoint.services', ["ngResource"]);
 
   angular.module('onpoint', [
-    'clovi.directives',
-    'clovi.controllers',
-    'clovi.services',
+    'onpoint.directives',
+    'onpoint.controllers',
+    'onpoint.services',
     'ui-notification'
   ]).run(["$rootScope", "Notification", function($rootScope, Notification) {
 
@@ -20,7 +20,7 @@
 
     $rootScope.$on(onpoint.error, function(event, response) {
       if (response.status == 0 || response.status == 500)
-        message = "Something went wrong on our end. Please try again or send an email to support@clovi.net!"
+        message = "Something went wrong on our end. Please try again!"
       else if (response.responseJSON)
         message = response.responseJSON.error
       else
@@ -32,9 +32,6 @@
   }])
 }());
 
-// We turn automatic bootstrapping via %html{"ng-app" => "cloviApp"}
-// so we can have AngularJS play nicely with Turbolinks.
-// See: http://stackoverflow.com/questions/14797935/using-angularjs-with-turbolinks
 $(document).on('ready page:load', function()
 {
   angular.bootstrap(document.body, ['onpoint'])
