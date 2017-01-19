@@ -111,6 +111,7 @@ class Drug
   # "nlmRxImages": []
   # Also see RxImage API: https://lhncbc.nlm.nih.gov/rximage-api
   # and https://rximage.nlm.nih.gov/docs/doku.php?id=parameter:rxcui
+  # TRY: http://localhost:5000/api/v0/drugs/rxcui?rxcui=352050
   def get_images
     orig_req = self.class.get("https://rximage.nlm.nih.gov/api/rximage/1/rxnav?rxcui=#{@rxcui}")
     req = orig_req["nlmRxImages"]

@@ -4,6 +4,7 @@ Rails.application.routes.draw do
   namespace :api, :defaults => { :format => :json } do
     namespace :v0 do
       resource :drugs, :only => [:show] do
+        get "rxcui"
       end
 
       resources :cards, :only => [:index] do

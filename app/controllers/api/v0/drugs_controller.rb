@@ -13,4 +13,13 @@ class API::V0::DrugsController < API::V0::BaseController
 
     render :json => drugs, :status => :ok and return
   end
+
+  #----------------------------------------------------------------------------
+  # GET /api/v0/drugs/rxcui?rxcui=...
+  def rxcui
+    drug = Drug.new(params[:rxcui])
+    drug.related()
+    drug.get_images()
+    render :json => drug, :status => :ok and return
+  end
 end
