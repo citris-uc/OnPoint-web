@@ -2,13 +2,15 @@ class API::V0::DrugsController < API::V0::BaseController
   #----------------------------------------------------------------------------
   # GET /api/v0/drugs
   def show
-    matches = Drug.find_by_name(params[:query].downcase.strip)
-    rxcuis  = matches.map {|m| m["rxcui"]}
-
     drugs = []
-    rxcuis.each do |rxcui|
-      d = Drug.new(rxcui)
-      drugs << d.get_all(false)
+
+    matches = Drug.find_by_name(params[:query].downcase.strip)
+    if matches.present?
+      rxcuis = matches.map {|m| m["rxcui"]}
+      rxcuis.each do |rxcui|
+        d = Drug.new(rxcui)
+        drugs << d.get_all(false)
+      end
     end
 
     render :json => drugs, :status => :ok and return
@@ -22,4 +24,6 @@ class API::V0::DrugsController < API::V0::BaseController
     drug.get_images()
     render :json => drug, :status => :ok and return
   end
+
+  #----------------------------------------------------------------------------
 end
