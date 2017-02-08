@@ -5,6 +5,7 @@ Rails.application.routes.draw do
     namespace :v0 do
       resource :drugs, :only => [:show] do
         get "rxcui"
+        get "dailymed"
       end
 
       resources :cards, :only => [:index] do
@@ -23,7 +24,9 @@ Rails.application.routes.draw do
   end
 
 
-  resource :drugs, :only => [:show]
+  resource :drugs, :only => [:show] do
+    get "dailymed"
+  end
 
 
   root                :to => "drugs#show"

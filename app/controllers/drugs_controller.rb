@@ -8,4 +8,10 @@ class DrugsController < ActionController::Base
     end
   end
 
+  def dailymed
+    respond_with do |format|
+      format.html
+    end
+  end
+
 end

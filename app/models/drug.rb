@@ -148,6 +148,25 @@ class Drug
     return orig_req
   end
 
+  # See: https://dailymed.nlm.nih.gov/dailymed/webservices-help/v2/rxcuis_api.cfm#JSON
+  # for more.
+  def self.find_by_query_and_dailymed(query)
+    data = []
+
+    req = self.get("https://dailymed.nlm.nih.gov/dailymed/services/v2/rxcuis.json?rxstring=#{query}")
+
+
+    data += req["data"]
+    next_page_url = req["metadata"]["next_page_url"]
+    while next_page_url != "null"
+      req = self.get(next_page_url)
+      data += req["data"]
+      next_page_url = req["metadata"]["next_page_url"]
+    end
+
+    return data
+  end
+
 
   #----------------------------------------------------------------------------
 
