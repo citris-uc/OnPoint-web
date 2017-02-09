@@ -4,6 +4,8 @@ gem 'devise'
 gem "figaro"
 gem "firebase"
 
+gem "ocr_space"
+
 gem "jwt", "~> 1.5.4"
 
 gem "foreman"

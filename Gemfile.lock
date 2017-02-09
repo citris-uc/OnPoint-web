@@ -49,6 +49,7 @@ GEM
       coffee-script-source
       execjs
     coffee-script-source (1.12.2)
+    colorize (0.8.1)
     concurrent-ruby (1.0.4)
     connection_pool (2.2.1)
     debug_inspector (0.0.2)
@@ -72,6 +73,10 @@ GEM
       activesupport (>= 4.1.0)
     haml (4.0.7)
       tilt
+    httmultiparty (0.3.16)
+      httparty (>= 0.7.3)
+      mimemagic
+      multipart-post
     httparty (0.14.0)
       multi_xml (>= 0.5.2)
     httpclient (2.8.3)
@@ -96,13 +101,20 @@ GEM
     mime-types (3.1)
       mime-types-data (~> 3.2015)
     mime-types-data (3.2016.0521)
+    mimemagic (0.3.2)
     mini_portile2 (2.1.0)
     minitest (5.10.1)
     multi_json (1.12.1)
     multi_xml (0.6.0)
+    multipart-post (2.0.0)
     nio4r (1.2.1)
     nokogiri (1.7.0)
       mini_portile2 (~> 2.1.0)
+    ocr_space (2.3.7)
+      colorize
+      httmultiparty
+      httparty
+      json
     orm_adapter (0.5.0)
     pg (0.19.0)
     puma (3.6.2)
@@ -203,6 +215,7 @@ DEPENDENCIES
   jquery-rails
   jwt (~> 1.5.4)
   listen (~> 3.0.5)
+  ocr_space
   pg
   puma (~> 3.0)
   rack-cors
