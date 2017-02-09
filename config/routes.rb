@@ -8,6 +8,10 @@ Rails.application.routes.draw do
         get "dailymed"
       end
 
+      resources :images, :only => [] do
+        put "parse", :on => :collection
+      end
+
       resources :cards, :only => [:index] do
         delete :force, :on => :collection
       end
@@ -28,6 +32,7 @@ Rails.application.routes.draw do
     get "dailymed"
   end
 
+  resources :images, :only => [:index]
 
   root                :to => "drugs#show"
 
