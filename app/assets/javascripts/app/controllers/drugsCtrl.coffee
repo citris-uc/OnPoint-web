@@ -5,7 +5,7 @@ ctrl = ($scope, $attrs, Drug) ->
 
   $scope.search = () ->
     $scope.state.loading = true
-    console.log("SUBMIT")
+
     req = Drug.query({query: $scope.params.search}).$promise
     req.then (response) ->
       $scope.drugs = response
