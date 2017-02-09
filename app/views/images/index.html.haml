@@ -85,7 +85,7 @@
           %i.fa.fa-spin.fa-refresh
           Takes about 10 seconds...
 
-        %h1.text-danger{"ng-if" => "!result.parsed"}
+        %h1.text-danger{"ng-if" => "state.failedToParse"}
           Could not parse image. Here is the raw text we extracted:
           {{result.raw}}
         %table.table.table-bordered{"ng-if" => "result.parsed"}

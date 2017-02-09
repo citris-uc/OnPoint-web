@@ -1,13 +1,14 @@
 ctrl = ($scope, $attrs, Image, Upload) ->
   $scope.params = {}
-  $scope.state = {loading: false}
+  $scope.state = {loading: false, failedToParse: false}
   $scope.drugs = []
   $scope.images = angular.fromJson($attrs.images)
   $scope.results = {}
 
   $scope.upload = () ->
-    $scope.state.loading = true
-    $scope.result        = {}
+    $scope.state.loading       = true
+    $scope.state.failedToParse = false
+    $scope.result              = {}
 
     req = Upload.upload({
       url: '/api/v0/images/parse',
@@ -15,7 +16,10 @@ ctrl = ($scope, $attrs, Image, Upload) ->
       data: {file: $scope.file}
     })
     req.then (response) ->
+      console.log(response)
       $scope.result = response.data
+      if (!$scope.result.parsed)
+        $scope.state.failedToParse = true
     req.catch (res) ->
       $scope.$emit(onpoint.error, res)
     req.finally (response) ->
@@ -24,11 +28,15 @@ ctrl = ($scope, $attrs, Image, Upload) ->
 
   $scope.parse = (img) ->
     $scope.state.loading = true
+    $scope.state.failedToParse = false
     $scope.result        = {}
 
     req = Image.parse({image: img}).$promise
     req.then (response) ->
       $scope.result = response
+      if (!$scope.result.parsed)
+        $scope.state.failedToParse = true
+
     req.catch (res) ->
       $scope.$emit(onpoint.error, res)
     req.finally (response) ->
