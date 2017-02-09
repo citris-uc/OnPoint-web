@@ -7,7 +7,8 @@
     'onpoint.directives',
     'onpoint.controllers',
     'onpoint.services',
-    'ui-notification'
+    'ui-notification',
+    'ngFileUpload'
   ]).run(["$rootScope", "Notification", function($rootScope, Notification) {
 
     $rootScope.$on(onpoint.success, function(event, response) {

@@ -19,6 +19,7 @@
 //= require "app/app"
 //= require_tree ./app/controllers/
 //= require_tree ./app/services
+//= require "angular-upload"
 //= require bootstrap/bootstrap
 //= require underscore/underscore
 
