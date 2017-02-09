@@ -46,12 +46,35 @@
     .page-header
       %h1 OCR API
     .row
-      .col-sm-6
-        %h2.text-center
-          Pick an image below to send to our OCR API for processing. The result will be displayed to the right
+      .col-sm-12
         %h3.text-center
+          Pick an image below to send to our OCR API for processing. The result will be displayed to the right
+        %h5.text-center
           Curious what happens to the images you upload? See OCR Space's Privacy Policy:
           = link_to "https://ocr.space/privacypolicy", "https://ocr.space/privacypolicy"
+
+        %hr
+    .row
+      .col-sm-6
+        .row
+          .col-xs-12
+            %h5.text-center
+              Option 1: Upload your own pill bottle image.
+
+            %form{"ng-submit" => "upload()"}
+              -# %div.button{"ngf-select" => "", "ng-model" => "file"}
+              %a{"ngf-select" => "", "ng-model" => "file", "name" => "file", "ngf-pattern" => "'image/*'",  "ngf-accept" => "'image/*'"}
+                Select an image
+              %br
+              %img{"ngf-src" => "file", :style => "height: 300px; width: 300px;"}
+              %br
+              %button.btn.btn-default{:type => "submit", "ng-class" => "{'disabled': !file}"} Parse Image
+
+
+        %hr
+
+        %h5.text-center
+          Option 2: Select a test image from below.
 
         .row{"ng-repeat" => "img in images"}
           .col-xs-12
