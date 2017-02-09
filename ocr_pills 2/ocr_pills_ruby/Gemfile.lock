@@ -1,0 +1,28 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    colorize (0.8.1)
+    httmultiparty (0.3.16)
+      httparty (>= 0.7.3)
+      mimemagic
+      multipart-post
+    httparty (0.14.0)
+      multi_xml (>= 0.5.2)
+    json (2.0.3)
+    mimemagic (0.3.2)
+    multi_xml (0.6.0)
+    multipart-post (2.0.0)
+    ocr_space (2.3.7)
+      colorize
+      httmultiparty
+      httparty
+      json
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  ocr_space
+
+BUNDLED WITH
+   1.11.2
