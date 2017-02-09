@@ -20,6 +20,8 @@
     })
 
     $rootScope.$on(onpoint.error, function(event, response) {
+      if (response.status == 500)
+        alert("Something failed when parsing this image. Notify dmitriskj@gmail.com and include the image.")
       if (response.status == 0 || response.status == 500)
         message = "Something went wrong on our end. Please try again!"
       else if (response.responseJSON)

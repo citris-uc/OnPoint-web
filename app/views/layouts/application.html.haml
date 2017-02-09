@@ -28,9 +28,9 @@
           %a.navbar-brand{:href => "#"} OnPoint
         #navbar.collapse.navbar-collapse
           %ul.nav.navbar-nav
-            %li.active
-              %a{:href => drugs_path} Drugs
-            %li
+            %li{:class => "#{request.path == drugs_path ? 'active' : ''}"}
+              %a{:href => drugs_path} Drugs API
+            %li{:class => "#{request.path == images_path ? 'active' : ''}"}
               %a{:href => images_path} Image API
             -# %li
             -#   %a{:href => "#about"} About
