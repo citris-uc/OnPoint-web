@@ -1,0 +1,80 @@
+- content_for :head do
+  :css
+    /* Sticky footer styles
+    -------------------------------------------------- */
+    html {
+     position: relative;
+     min-height: 100%;
+    }
+    body {
+     /* Margin bottom by footer height */
+     margin-bottom: 60px;
+    }
+    .footer {
+     position: absolute;
+     bottom: 0;
+     width: 100%;
+     /* Set the fixed height of the footer here */
+     height: 60px;
+     background-color: #f5f5f5;
+    }
+
+
+    /* Custom page CSS
+    -------------------------------------------------- */
+    /* Not required for template or sticky footer method. */
+
+    body > .container {
+     padding: 60px 15px 0;
+    }
+    .container .text-muted {
+     margin: 20px 0;
+    }
+
+    .footer > .container {
+     padding-right: 15px;
+     padding-left: 15px;
+    }
+
+    code {
+     font-size: 80%;
+    }
+
+
+- content_for :page_content do
+  %div{"ng-controller" => "imageCtrl", :images => @images.to_json}
+    .page-header
+      %h1 OCR API
+    .row
+      .col-sm-6
+        %h2.text-center
+          Pick an image below to send to our OCR API for processing. The result will be displayed to the right
+        %h3.text-center
+          Curious what happens to the images you upload? See OCR Space's Privacy Policy:
+          = link_to "https://ocr.space/privacypolicy", "https://ocr.space/privacypolicy"
+
+        .row{"ng-repeat" => "img in images"}
+          .col-xs-12
+            %img{:src => "{{img.path}}", :style => "height: 300px; width: 300px;", "ng-click" => "parse(img)"}
+
+      .col-sm-6{:style => "position:fixed; top:300px; right:20px;"}
+        %h1.text-center{"ng-if" => "state.loading"}
+          %i.fa.fa-spin.fa-refresh
+          Takes about 10 seconds...
+
+        %table.table.table-bordered{"ng-if" => "result.parsed"}
+          %tr
+            %td Name
+            %td {{result.parsed.name}}
+          %tr
+            %td Delivery method
+            %td {{result.parsed.delivery}}
+          %tr
+            %td Amount
+            %td {{result.parsed.amount}}
+          %tr
+            %td Frequency
+            %td {{result.parsed.frequency}}
+          %tr
+            %td Raw extraction
+            %td {{result.raw}}

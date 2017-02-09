@@ -36,6 +36,9 @@ Rails.application.configure do
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 
+
+  config.log_level = :info # In any environment initializer, or
+
   # Raise an error on page load if there are pending migrations.
   config.active_record.migration_error = :page_load
 
@@ -54,8 +57,6 @@ Rails.application.configure do
   # routes, locales, etc. This feature depends on the listen gem.
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
-  #-----------------------------------------------------------------------------------------------
-  # Logging
   #-----------------------------------------------------------------------------------------------
 
   # See: https://github.com/cyu/rack-cors
