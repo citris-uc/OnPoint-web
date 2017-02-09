@@ -21,6 +21,8 @@ ctrl = ($scope, $attrs, Image, Upload) ->
       if (!$scope.result.parsed)
         $scope.state.failedToParse = true
     req.catch (res) ->
+      console.log("ERROR")
+      console.log(res)
       $scope.$emit(onpoint.error, res)
     req.finally (response) ->
       $scope.state.loading = false

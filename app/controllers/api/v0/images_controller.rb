@@ -10,8 +10,20 @@ class API::V0::ImagesController < API::V0::BaseController
       file_path = params[:file].path
     end
 
-    resource   = OcrSpace::Resource.new(apikey: "0ad729224588957")
-    result_str = resource.clean_convert file: file_path
+    # TODO: OCR space gem doesn't properly handle errors.
+    # resource   = OcrSpace::Resource.new(apikey: "0ad729224588957")
+    # result_str = resource.clean_convert file: file_path
+
+    @files = File.new(file_path)
+    @data = OcrSpace::FilePost.post('/parse/image', body: { apikey: "0ad729224588957", language: "eng", isOverlayRequired: false, file: @files })
+    if @data.parsed_response["ErrorMessage"].present?
+      render :json => {:error => @data.parsed_response["ErrorMessage"][0]}, :status => 422 and return
+    end
+
+
+    result_str = @data.parsed_response['ParsedResults'][0]["ParsedText"].gsub(/\r|\n/, "")
+
+
     @parsed_response = result_str.split.join(" ").upcase
 
 
