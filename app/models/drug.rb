@@ -76,11 +76,11 @@ class Drug
 
   def purpose
     self.get_fda_information()
-    return self.fda_info["information_for_patients_table"].try(:first).try(:html_safe) || self.fda_info["instructions_for_use_table"].try(:first).try(:html_safe)
+    return self.fda_info["information_for_patients_table"].try(:first).try(:html_safe) || self.fda_info["instructions_for_use_table"].try(:first).try(:html_safe)  || self.fda_info["information_for_patients"].try(:first).try(:html_safe)
   end
 
   def get_fda_information
-    orig_req = self.class.get("https://api.fda.gov/drug/label.json?search=openfda.rxcui:260243+AND+_exists_:dosage_and_administration+OR+_exists_:purpose", {})
+    orig_req = self.class.get("https://api.fda.gov/drug/label.json?search=openfda.rxcui:#{@rxcui}+AND+_exists_:dosage_and_administration+OR+_exists_:purpose", {})
     self.fda_info = orig_req["results"][0].slice("dosage_and_administration", "dosage_forms_and_strengths", "information_for_patients", "information_for_patients_table", "instructions_for_use", "instructions_for_use_table")
     return self.fda_info
   end
