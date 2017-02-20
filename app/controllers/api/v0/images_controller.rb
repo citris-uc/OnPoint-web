@@ -5,17 +5,17 @@ class API::V0::ImagesController < API::V0::BaseController
   def parse_from_mobile
     @image = Image.new("")
 
-    # begin
+    begin
       puts "PARSING!"
       @image.convert_to_text_from_base64(params[:base64_photo])
       puts "FINISHED PARSING!\n\n\n"
 
-      # file_path = Rails.root.join("app", "assets", "images", "test", "test4.jpg")
-      # @image = Image.new(file_path)
-      # @image.convert_to_text()
-    # rescue StandardError => e
-    #   render :json => {:error => e}, :status => 422 and return
-    # end
+      file_path = Rails.root.join("app", "assets", "images", "test", "test4.jpg")
+      @image = Image.new(file_path)
+      @image.convert_to_text()
+    rescue StandardError => e
+      render :json => {:error => e}, :status => 422 and return
+    end
 
     @image.parse()
     render "api/v0/images/parse" and return
