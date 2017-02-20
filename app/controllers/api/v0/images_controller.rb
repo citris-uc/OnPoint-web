@@ -6,7 +6,9 @@ class API::V0::ImagesController < API::V0::BaseController
     @image = Image.new("")
 
     begin
+      puts "PARSING!"
       @image.convert_to_text_from_base64(params[:base64_photo])
+      puts "FINISHED PARSING!\n\n\n"
 
       # file_path = Rails.root.join("app", "assets", "images", "test", "test4.jpg")
       # @image = Image.new(file_path)

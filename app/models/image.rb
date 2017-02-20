@@ -27,6 +27,8 @@ class Image
       raise StandardError.new(@data.parsed_response["ErrorMessage"][0]) and return
     end
 
+    puts "\n\n\n@data: #{@data.inspect}\n\n\n"
+
     self.raw_text = @data.parsed_response['ParsedResults'][0]["ParsedText"].gsub(/\r|\n/, "")
     return self.raw_text
   end
