@@ -18,7 +18,7 @@ ctrl = ($scope, $attrs, Image, Upload) ->
     req.then (response) ->
       console.log(response)
       $scope.result = response.data
-      if (!$scope.result.parsed)
+      if (!$scope.result.raw_text)
         $scope.state.failedToParse = true
     req.catch (res) ->
       console.log("ERROR")
@@ -36,7 +36,7 @@ ctrl = ($scope, $attrs, Image, Upload) ->
     req = Image.parse({image: img}).$promise
     req.then (response) ->
       $scope.result = response
-      if (!$scope.result.parsed)
+      if (!$scope.result.raw_text)
         $scope.state.failedToParse = true
 
     req.catch (res) ->

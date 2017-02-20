@@ -88,19 +88,19 @@
         %h1.text-danger{"ng-if" => "state.failedToParse"}
           Could not parse image. Here is the raw text we extracted:
           {{result.raw}}
-        %table.table.table-bordered{"ng-if" => "result.parsed"}
+        %table.table.table-bordered{"ng-if" => "result.raw_text"}
           %tr
             %td Name
-            %td {{result.parsed.name}}
+            %td {{result.drug_name}}
           %tr
             %td Delivery method
-            %td {{result.parsed.delivery}}
+            %td {{result.delivery}}
           %tr
             %td Amount
-            %td {{result.parsed.amount}}
+            %td {{result.amount}}
           %tr
             %td Frequency
-            %td {{result.parsed.frequency}}
+            %td {{result.frequency}}
           %tr
             %td Raw extraction
-            %td {{result.raw}}
+            %td {{result.raw_text}}
