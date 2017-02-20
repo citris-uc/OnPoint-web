@@ -10,6 +10,7 @@ Rails.application.routes.draw do
 
       resources :images, :only => [] do
         put "parse", :on => :collection
+        put "parse_from_mobile", :on => :collection
       end
 
       resources :cards, :only => [:index] do

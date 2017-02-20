@@ -57,7 +57,6 @@
       %i.fa.fa-spin.fa-refresh
     %ul.list-group{"ng-repeat" => "drug in drugs"}
       %li.list-group-item.active
-        RxCui: {{drug.rxcui}} ({{drug.names}})
-      %li.list-group-item{"ng-repeat" => "brand in drug.sbd"}
-        %h4 {{brand.name}}
-        %p {{brand.synonym}}
+        RxCui: {{drug.rxcui}}
+      %li.list-group-item
+        %h4 {{drug.name}}

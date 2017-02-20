@@ -5,23 +5,84 @@ class Drug
     @rxcui = rxcui
     self.class.send(:attr_accessor, "rxcui")
 
-    @names = []
-    self.class.send(:attr_accessor, "names")
+    # @names = []
+    # self.class.send(:attr_accessor, "names")
 
-    @codes = []
-    self.class.send(:attr_accessor, "codes")
+    # @codes = []
+    # self.class.send(:attr_accessor, "codes")
 
-    @properties = []
-    self.class.send(:attr_accessor, "properties")
+    # @properties = []
+    # self.class.send(:attr_accessor, "properties")
 
-    @images = []
-    self.class.send(:attr_accessor, "images")
+    # @images = []
+    # self.class.send(:attr_accessor, "images")
 
-    @terms  = []
-    self.class.send(:attr_accessor, "terms")
+    @pill_images = []
+    self.class.send(:attr_accessor, "pill_images")
 
-    @sbd = []
-    self.class.send(:attr_accessor, "sbd")
+    # @terms  = []
+    # self.class.send(:attr_accessor, "terms")
+
+    @scd = []
+    self.class.send(:attr_accessor, "scd")
+
+    # @sbd = []
+    # self.class.send(:attr_accessor, "sbd")
+
+    @fda_info = {}
+    self.class.send(:attr_accessor, "fda_info")
+  end
+
+  # https://rxnav.nlm.nih.gov/REST/approximateTerm.json?term=lortab
+  # See: https://rxnav.nlm.nih.gov/RxNormAPIs.html#uLink=RxNorm_REST_getApproximateMatch
+  # Try lortab or zestril
+  # TODO: Try to use /displaynames autocomplete to make the search term more honed.
+  def self.find_rxcuis_by_name(name)
+    req = self.get("https://rxnav.nlm.nih.gov/REST/approximateTerm.json?term=#{name}", {})
+    candidates = req.parsed_response["approximateGroup"]["candidate"]
+
+    # Candidates come with a score and a rank. We select and return all candidates with rank=1
+    return nil if candidates.blank?
+    return candidates.find_all {|c| c["rank"] == "1"}.uniq {|c| c["rxcui"]}.map {|res| res["rxcui"]}.uniq
+  end
+
+  # See https://rxnav.nlm.nih.gov/RxNormAPIs.html#uLink=RxNorm_REST_getRelatedByType
+  # The related term types endpoint will help us get the branded drug information
+  # from search results that match on precise ingredient or a clinical drug component.
+  # E.g. searching for hydrocodone returns a well-defined ingredient, but very little
+  # information on the branded drugs. You need to use /related for that...
+  # See also https://rxnav.nlm.nih.gov/REST/allconcepts.json?tty=SCD
+  # NOTE: We use SCD because it seems to match most pill bottles we've seen to
+  # date (February 19, 2017).
+  def find_scd_matches
+    orig_req = self.class.get("https://rxnav.nlm.nih.gov/REST/rxcui/#{@rxcui}/related.json?tty=SCD", {})
+    return orig_req["relatedGroup"]["conceptGroup"][0]["conceptProperties"]
+  end
+
+  def get_pill_images_via_rximage
+    # TODO: Consider using https://pillbox.nlm.nih.gov/PHP/pillboxAPIService.php?rxcui=103968&key=NQR5VKD92P
+    orig_req = self.class.get("https://rximage.nlm.nih.gov/api/rximage/1/rxnav?rxcui=#{@rxcui}&resolution=120")
+    req = orig_req["nlmRxImages"]
+    req.each do |img|
+      self.pill_images << img["imageUrl"]
+    end
+    return orig_req
+  end
+
+  def name
+    scd = self.find_scd_matches()
+    return scd[0]["name"]
+  end
+
+  def purpose
+    self.get_fda_information()
+    return self.fda_info["information_for_patients_table"].try(:first).try(:html_safe) || self.fda_info["instructions_for_use_table"].try(:first).try(:html_safe)
+  end
+
+  def get_fda_information
+    orig_req = self.class.get("https://api.fda.gov/drug/label.json?search=openfda.rxcui:260243+AND+_exists_:dosage_and_administration+OR+_exists_:purpose", {})
+    self.fda_info = orig_req["results"][0].slice("dosage_and_administration", "dosage_forms_and_strengths", "information_for_patients", "information_for_patients_table", "instructions_for_use", "instructions_for_use_table")
+    return self.fda_info
   end
 
   def get_all(from_cache = false)
@@ -54,30 +115,19 @@ class Drug
     end
   end
 
-  # https://rxnav.nlm.nih.gov/REST/approximateTerm.json?term=lortab
-  # See: https://rxnav.nlm.nih.gov/RxNormAPIs.html#uLink=RxNorm_REST_getApproximateMatch
-  # Try lortab or zestril
-  # NOTE: We'll try to use /displaynames autocomplete to make the search term more honed.
-  def self.find_by_name(name)
-    req = self.get("https://rxnav.nlm.nih.gov/REST/approximateTerm.json?term=#{name}", {})
-    candidates = req.parsed_response["approximateGroup"]["candidate"]
-
-    # Candidates come with a score and a rank. We select and return all candidates with rank=1
-    return nil if candidates.blank?
-    return candidates.find_all {|c| c["rank"] == "1"}.uniq {|c| c["rxcui"]}
-  end
 
   # https://rxnav.nlm.nih.gov/REST/rxcui/856999/allProperties.json?prop=all
   # See: https://rxnav.nlm.nih.gov/RxNormAPIs.html#uLink=RxNorm_REST_getAllProperties
   # Try 856999 (APAP 325 MG / hydrocodone bitartrate 10 MG Oral Tablet)...
   # or 196472 (zestril)
-  def get
-    orig_req = self.class.get("https://rxnav.nlm.nih.gov/REST/rxcui/#{@rxcui}/allProperties.json?prop=all", {})
-    req = orig_req["propConceptGroup"]["propConcept"]
-    self.properties = req.find_all {|prop| prop["propCategory"] == "ATTRIBUTES"}
-    self.names      = req.find_all {|prop| prop["propCategory"] == "NAMES"}
-    return orig_req
-  end
+  # TODO: Deprecated for now...
+  # def get
+  #   orig_req = self.class.get("https://rxnav.nlm.nih.gov/REST/rxcui/#{@rxcui}/allProperties.json?prop=all", {})
+  #   req = orig_req["propConceptGroup"]["propConcept"]
+  #   self.properties = req.find_all {|prop| prop["propCategory"] == "ATTRIBUTES"}
+  #   self.names      = req.find_all {|prop| prop["propCategory"] == "NAMES"}
+  #   return orig_req
+  # end
 
   # See https://rxnav.nlm.nih.gov/RxNormAPIs.html#uLink=RxNorm_REST_getRelatedByType
   # The related term types endpoint will help us get the branded drug information
@@ -85,11 +135,12 @@ class Drug
   # E.g. searching for hydrocodone returns a well-defined ingredient, but very little
   # information on the branded drugs. You need to use /related for that...
   # See also https://rxnav.nlm.nih.gov/REST/allconcepts.json?tty=SBD
-  def related
-    orig_req = self.class.get("https://rxnav.nlm.nih.gov/REST/rxcui/#{@rxcui}/related.json?tty=SBD", {})
-    self.sbd = orig_req["relatedGroup"]["conceptGroup"][0]["conceptProperties"]
-    return orig_req
-  end
+  # TODO: Deprecated for now...
+  # def related
+  #   orig_req = self.class.get("https://rxnav.nlm.nih.gov/REST/rxcui/#{@rxcui}/related.json?tty=SBD", {})
+  #   self.sbd = orig_req["relatedGroup"]["conceptGroup"][0]["conceptProperties"]
+  #   return orig_req
+  # end
 
   # NOTE: Codes is such a large object that we'll fetch them separately... if needed.
   def get_codes

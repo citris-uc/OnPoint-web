@@ -1,5 +1,23 @@
 class API::V0::ImagesController < API::V0::BaseController
   #----------------------------------------------------------------------------
+  # PUT /api/v0/ocrs/parse_from_mobile
+
+  def parse_from_mobile
+    file_path = Rails.root.join("app", "assets", "images", "test", "test4.jpg")
+    @image = Image.new(file_path)
+
+    begin
+      @image.convert_to_text()
+    rescue StandardError => e
+      render :json => {:error => e}, :status => 422 and return
+    end
+
+    @image.parse()
+    render "api/v0/images/parse" and return
+  end
+
+
+  #----------------------------------------------------------------------------
   # PUT /api/v0/ocrs/parse
 
   def parse
