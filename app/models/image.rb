@@ -22,7 +22,11 @@ class Image
   end
 
   def convert_to_text_from_base64(base64)
+    puts "STARTING..."
     @data  = OcrSpace::FilePost.post('/parse/image', body: { apikey: "0ad729224588957", language: "eng", isOverlayRequired: false, base64image: base64})
+
+    puts "\n\n\n@data: #{@data.inspect}\n\n\n"
+
     if @data.parsed_response["ErrorMessage"].present?
       raise StandardError.new(@data.parsed_response["ErrorMessage"][0]) and return
     end
