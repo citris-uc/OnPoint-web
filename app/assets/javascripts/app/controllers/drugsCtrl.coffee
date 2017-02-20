@@ -4,14 +4,14 @@ ctrl = ($scope, $attrs, Drug) ->
   $scope.drugs = []
 
   $scope.search = () ->
+    $scope.drugs = []
     $scope.state.loading = true
 
     req = Drug.query({query: $scope.params.search}).$promise
     req.then (response) ->
-      $scope.drugs = response
-    , (response) ->
       console.log(response)
-      $scope.$emit(onpoint.error, response)
+      $scope.drugs = response
+    req.catch (response) -> $scope.$emit(onpoint.error, response)
     req.finally (response) ->
       $scope.state.loading = false
     return false;
