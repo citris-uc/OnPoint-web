@@ -21,6 +21,45 @@ class Image
     return self.raw_text
   end
 
+  def convert_to_text_from_base64(base64)
+    @data  = OcrSpace::FilePost.post('/parse/image', body: { apikey: "0ad729224588957", language: "eng", isOverlayRequired: false, base64image: base64})
+    if @data.parsed_response["ErrorMessage"].present?
+      raise StandardError.new(@data.parsed_response["ErrorMessage"][0]) and return
+    end
+
+    self.raw_text = @data.parsed_response['ParsedResults'][0]["ParsedText"].gsub(/\r|\n/, "")
+    return self.raw_text
+  end
+
+  # def convert_to_text_from_base64(base64)
+  #   path = Rails.root.join('tmp') + "#{SecureRandom.hex}.jpeg"
+  #   File.open(path, "wb+") do |f|
+  #     f.write(Base64.decode64(base64['data:image/jpeg;base64,'.length..-1]))
+  #   end
+  #
+  #   # file = Tempfile.new(["parse_from_mobile", ".jpeg"])
+  #   # file.binmode
+  #   # decoded = Base64.decode64(base64['data:image/jpeg;base64,'.length..-1])
+  #   # file.write(decoded)
+  #
+  #   puts "File written..."
+  #
+  #   file = File.new(path)
+  #
+  #   @data  = OcrSpace::FilePost.post('/parse/image', body: { apikey: "0ad729224588957", language: "eng", isOverlayRequired: false, file: file})
+  #   if @data.parsed_response["ErrorMessage"].present?
+  #     raise StandardError.new(@data.parsed_response["ErrorMessage"][0]) and return
+  #   end
+  #
+  #   puts "@data: #{@data.inspect}"
+  #   File.delete(path)
+  #
+  #
+  #
+  #   self.raw_text = @data.parsed_response['ParsedResults'][0]["ParsedText"].gsub(/\r|\n/, "")
+  #   return self.raw_text
+  # end
+
   def parse
     self.extract_drug_name
     self.extract_frequency
