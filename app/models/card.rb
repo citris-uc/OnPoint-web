@@ -31,6 +31,12 @@ class Card
     return date.strftime("%Y-%m-%d")
   end
 
+  def self.should_display(uid, card)
+    schedule = Card.schedule(uid, card)
+    t = Time.zone.parse(schedule["time"])
+    return (Time.zone.now < t + 2.hours)
+  end
+
   def self.short_timestamp(uid, card)
     schedule = MedicationSchedule.find_by_card(uid, card)
     # raise "schedule: #{schedule.inspect}"
@@ -43,6 +49,11 @@ class Card
     # end
   end
 
+  def self.schedule(uid, card)
+    schedule = MedicationSchedule.find_by_card(uid, card)
+    schedule["medications_length"] = schedule["medications"].length
+    return schedule
+  end
 
   #   $scope.getMedicationsDescription = function(card, date_key) {
   # def self.description(uid, card)
