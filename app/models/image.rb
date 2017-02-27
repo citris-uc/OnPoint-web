@@ -61,13 +61,15 @@ class Image
 
     File.delete(path)
 
+    if @data.parsed_response["ParsedResults"] && @data.parsed_response["ParsedResults"][0] && @data.parsed_response["ParsedResults"][0]["ErrorMessage"].present?
+      raise StandardError.new(@data.parsed_response["ParsedResults"][0]["ErrorMessage"]) and return
+    end
+
+
     if @data.parsed_response["ErrorMessage"].present?
       raise StandardError.new(@data.parsed_response["ErrorMessage"]) and return
     end
 
-    if @data.parsed_response["ParsedResults"][0]["ErrorMessage"].present?
-      raise StandardError.new(@data.parsed_response["ParsedResults"][0]["ErrorMessage"]) and return
-    end
 
     self.raw_text = @data.parsed_response['ParsedResults'][0]["ParsedText"].gsub(/\r|\n/, "")
     return self.raw_text
