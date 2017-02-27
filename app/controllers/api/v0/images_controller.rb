@@ -39,9 +39,11 @@ class API::V0::ImagesController < API::V0::BaseController
 
     @image = Image.new(file_path)
 
+    puts "\n\n\n\nConverting to text...\n\n\n"
     begin
       @image.convert_to_text()
     rescue StandardError => e
+      puts "\n\n\n\nRescuing error = #{e.inspect}\n\n\n"
       render :json => {:error => e}, :status => 422 and return
     end
 
