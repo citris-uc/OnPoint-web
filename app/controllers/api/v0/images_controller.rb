@@ -12,7 +12,7 @@ class API::V0::ImagesController < API::V0::BaseController
 
     rescue StandardError => e
       puts "\n\n\n\nRescuing error = #{e.inspect}\n\n\n"
-      render :json => {:error => e}, :status => 422 and return
+      render :json => {:error => e.message}, :status => 422 and return
     end
 
     @image.parse()
