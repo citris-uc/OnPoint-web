@@ -59,11 +59,12 @@ class Image
 
     puts "\n\n\n@data: #{@data.inspect}\n\n\n"
 
+    File.delete(path)
+
     if @data.parsed_response["ParsedResults"][0]["ErrorMessage"].present?
+      puts "\n\n\nABOUT TO RAISE ERROR!!!!!\n\n\n"
       raise StandardError.new(@data.parsed_response["ParsedResults"][0]["ErrorMessage"]) and return
     end
-
-    File.delete(path)
 
     self.raw_text = @data.parsed_response['ParsedResults'][0]["ParsedText"].gsub(/\r|\n/, "")
     return self.raw_text
