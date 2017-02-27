@@ -59,7 +59,7 @@ class Image
 
     puts "\n\n\n@data: #{@data.inspect}\n\n\n"
 
-    File.delete(path)
+    # File.delete(path)
 
     if @data.parsed_response["ParsedResults"] && @data.parsed_response["ParsedResults"][0] && @data.parsed_response["ParsedResults"][0]["ErrorMessage"].present?
       raise StandardError.new(@data.parsed_response["ParsedResults"][0]["ErrorMessage"]) and return
