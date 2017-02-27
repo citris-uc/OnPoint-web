@@ -61,8 +61,11 @@ class Image
 
     File.delete(path)
 
+    if @data.parsed_response["ErrorMessage"].present?
+      raise StandardError.new(@data.parsed_response["ErrorMessage"]) and return
+    end
+
     if @data.parsed_response["ParsedResults"][0]["ErrorMessage"].present?
-      puts "\n\n\nABOUT TO RAISE ERROR!!!!!\n\n\n"
       raise StandardError.new(@data.parsed_response["ParsedResults"][0]["ErrorMessage"]) and return
     end
 
