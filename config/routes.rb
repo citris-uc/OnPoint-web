@@ -15,6 +15,8 @@ Rails.application.routes.draw do
 
       resources :cards, :only => [:index] do
         delete :force, :on => :collection
+        put    :appointment, :on => :collection
+        delete :destroy_appointment, :on => :collection
       end
 
       resources :medications, :only => [:create] do

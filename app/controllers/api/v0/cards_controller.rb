@@ -36,4 +36,37 @@ class API::V0::CardsController < API::V0::BaseController
     Card.generate_cards_for_date(@uid, tomm)
   end
 
+
+  #----------------------------------------------------------------------------
+  # PUT /api/v0/cards/appointment
+  # This method will force-generate cards for today and tomorrow.
+  # This OVERWRITES any existing schedule. Why? Because it's currently only
+  # called from when creating/editing medication schedule.
+  def appointment
+    puts "params; #{params[:appointment]}"
+    Card.generate_appointment_card(@uid, params[:firebase_id], params[:appointment])
+  end
+
+  #----------------------------------------------------------------------------
+  # DELETE /api/v0/cards/destroy_appointment
+  # This method will force-generate cards for today and tomorrow.
+  # This OVERWRITES any existing schedule. Why? Because it's currently only
+  # called from when creating/editing medication schedule.
+  def destroy_appointment
+    puts "@uid: #{@uid}"
+    if params[:firebase_id].blank?
+      puts "FIREBASE IS BLANK"
+      raise API::V0::Error.new("Firebase ID can't be blank", 403) and return
+    end
+
+    if params[:appointment_date].blank?
+      puts "APPIINTMENT DATE IS BLANK"
+      raise API::V0::Error.new("Appointment date can't be blank", 403) and return
+    end
+
+    puts "DELETEING CARD!"
+
+    Card.destroy_appointment_card(@uid, params[:firebase_id], params[:appointment_date])
+  end
+
 end

@@ -314,30 +314,26 @@ class Card
     return firebase.get("patients/#{uid}/cards/#{Time.zone.yesterday.strftime('%Y-%m-%d')}").body
   end
 
-  # def self.update_shown_at(uid, date_string, card_id)
-  #   card = self.find_by_date_and_id(uid, date_string, card_id)
-  #   if card.present?
-  #
-  #   end
-  #
-  #   if cards.present?
-  #     cards.each do |id, card|
-  #       puts "card: #{card.inspect}"
-  #       if card["object_id"] == object_id && card["object_type"] == object_type
-  #
-  #         # If the new object is meant to be asked today, then let's go ahead and update it.
-  #         wday = Time.zone.parse(date_string)
-  #         if slot["days"][wday] == true
-  #           time = Time.parse(slot["time"])
-  #           date = Time.zone.parse(date_string)
-  #           date.hours = time.hours
-  #           date.minutes = time.minutes
-  #
-  #           self.update(uid, id, date_string, {:shown_at => date.iso8601})
-  #         end
-  #       end
-  #     end
-  #   end
-  # end
+  def self.generate_appointment_card(uid, id, appt_params)
+    date        = appt_params[:date]
+    date_string = Card.format_date(Time.parse(date))
 
+    card               = {}
+    card[:action_type] = "action"
+    card[:object_type] = "appointment"
+    card[:object_id]   = id
+    Card.sava(uid, date_string, card)
+  end
+
+  def self.destroy_appointment_card(uid, firebase_id, date_string)
+    firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
+
+    cards = self.find_by_uid_and_date(uid, date_string)
+    return nil if cards.blank?
+
+    matching_card = cards.to_a.find {|c| c[1]["object_id"] == firebase_id}
+    if matching_card.present?
+      firebase.delete("patients/#{uid}/cards/#{date_string}/#{matching_card[0]}")
+    end
+  end
 end
