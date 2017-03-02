@@ -4,22 +4,29 @@ class API::V0::CardsController < API::V0::BaseController
   #----------------------------------------------------------------------------
   # GET /api/v0/cards
   def index
-    # At this point, we have the UID. Let's query the cards.
-    if params[:when] == "today"
-      @cards = Card.find_by_uid_and_date(@uid, Time.zone.now.strftime("%Y-%m-%d"))
+    if params[:upcoming].present?
+      @cards = []
+      cards = Card.find_by_uid_and_date(@uid, Time.zone.now.strftime("%F"))
+
+      cards.to_a.each do |c|
+        schedule = Card.schedule(@uid, c[1])
+        t = Time.zone.parse(schedule["time"])
+        if (Time.zone.now < t + 2.hours)
+          @cards << c
+        end
+      end
+
+      start_date = Time.zone.now
+      end_date   = start_date + 1.week
+      @cards += Card.appointment_cards_between(@uid, start_date, end_date)
+
 
       if @cards.blank?
         today = Card.format_date(Time.zone.today)
         Card.generate_cards_for_date(@uid, today)
-        @cards = Card.find_by_uid_and_date(@uid, Time.zone.now.strftime("%Y-%m-%d"))
+        @cards = Card.find_by_uid_and_date(@uid, Time.zone.now.strftime("%F"))
       end
-
-
-    elsif params[:when] == "past"
-      @cards = Card.find_past_by_uid(@uid)
     end
-    # Card.find_schedule_by_uid_and_card(uid, "test")
-    # Card.generate_cards_for_date(uid, Time.zone.now.strftime("%Y-%m-%d"))
   end
 
   #----------------------------------------------------------------------------

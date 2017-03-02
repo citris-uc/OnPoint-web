@@ -28,13 +28,21 @@ class Card
   #----------------------------------------------------------------------------
 
   def self.format_date(date)
-    return date.strftime("%Y-%m-%d")
+    return date.strftime("%F")
   end
 
-  def self.should_display(uid, card)
-    schedule = Card.schedule(uid, card)
-    t = Time.zone.parse(schedule["time"])
-    return (Time.zone.now < t + 2.hours)
+  def self.appointment_cards_between(uid, start_date, end_date)
+
+    date = start_date
+    cards = []
+    while (date < end_date.end_of_day)
+      cds = self.find_by_uid_and_date(uid, date.strftime("%F"))
+      cards += cds.to_a.find_all {|c| c[1]["object_type"] == "appointment"}
+
+      date  += 1.day
+    end
+
+    return cards
   end
 
   def self.short_timestamp(uid, card)
@@ -322,6 +330,7 @@ class Card
     card[:action_type] = "action"
     card[:object_type] = "appointment"
     card[:object_id]   = id
+    card[:appointment] = appt_params
     Card.sava(uid, date_string, card)
   end
 

@@ -1,6 +1,5 @@
-json.cards @cards do |id, card|
-  next unless Card.should_display(@uid, card)
-  json.id id
+json.cards @cards do |card|
+  json.id card[0]
 
-  json.partial! "api/v0/cards/card", :card => card
+  json.partial! "api/v0/cards/card", :card => card[1]
 end
