@@ -6,26 +6,29 @@ class API::V0::CardsController < API::V0::BaseController
   def index
     if params[:upcoming].present?
       @cards = []
-      cards = Card.find_by_uid_and_date(@uid, Time.zone.now.strftime("%F"))
 
+      # Find all cards. Create medication schedule cards.
+      cards = Card.find_by_uid_and_date(@uid, Time.zone.now.strftime("%F"))
+      if cards.blank?
+        today = Card.format_date(Time.zone.today)
+        Card.generate_medication_schedule_cards_for_date(@uid, today)
+        cards = Card.find_by_uid_and_date(@uid, Time.zone.now.strftime("%F"))
+      end
+
+      # Add the medication schedule only if it's not in the past.
       cards.to_a.each do |c|
-        schedule = Card.schedule(@uid, c[1])
-        t = Time.zone.parse(schedule["time"])
-        if (Time.zone.now < t + 2.hours)
-          @cards << c
+        if c[1]["object_type"] == "medication_schedule"
+          t = Time.zone.parse(c[1]["medication_schedule"]["time"])
+          if (Time.zone.now < t + 2.hours)
+            @cards << c
+          end
         end
       end
 
+      # Find appointment cards.
       start_date = Time.zone.now
       end_date   = start_date + 1.week
-      @cards += Card.appointment_cards_between(@uid, start_date, end_date)
-
-
-      if @cards.blank?
-        today = Card.format_date(Time.zone.today)
-        Card.generate_cards_for_date(@uid, today)
-        @cards = Card.find_by_uid_and_date(@uid, Time.zone.now.strftime("%F"))
-      end
+      @cards    += Card.appointment_cards_between(@uid, start_date, end_date)
     end
   end
 
