@@ -12,11 +12,11 @@ class DailyCardsWorker
     patients.each do |uid, data|
       cards = data["cards"]
       if cards.blank? || cards[today_string].blank?
-        Card.generate_cards_for_date(uid, today_string)
+        Card.generate_medication_schedule_cards_for_date(uid, today_string)
       end
 
       if cards.blank? || cards[tomorrow_string].blank?
-        Card.generate_cards_for_date(uid, tomorrow_string)
+        Card.generate_medication_schedule_cards_for_date(uid, tomorrow_string)
       end
     end
 

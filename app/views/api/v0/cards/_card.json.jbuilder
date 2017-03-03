@@ -6,7 +6,7 @@ json.title Card.title(card)
 json.description Card.description(@uid, card)
 
 if card["object_type"] == "medication_schedule"
-  json.schedule Card.schedule(@uid, card)
+  json.schedule card["medication_schedule"] # Card.schedule(@uid, card)
 else
   json.appointment card["appointment"]
 end
