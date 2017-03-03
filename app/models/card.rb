@@ -256,55 +256,29 @@ class Card
     end
   end
 
-  def self.generate_cards_for_date(uid, date_string)
+  def self.generate_medication_schedule_cards_for_date(uid, date_string)
     cards = self.find_by_uid_and_date(uid, date_string)
+
     if cards.nil?
-      # that.createFromObjectForDate(CARD.CATEGORY.MEDICATIONS_SCHEDULE, date)
-      # date = date
-      # 'medications_schedule'
-      # var defaultRef = MedicationSchedule.ref();
-      #     this.createFromSchedule(defaultRef, object_type, date);
       medication_schedule = MedicationSchedule.find_by_uid(uid)
       return if medication_schedule.blank?
-      # this.createFromSchedule(medication_schedule, 'medication_schedule', date);
 
       wday = Time.zone.parse(date_string).wday
-      # ["-K_1l5MScJdm1tLxwpWr", {"days"=>[true, true, true, true, true, true, true], "medications"=>["Lasix", "Toprol XL", "Zestril", "Coumadin", "Riomet"], "slot"=>"Morning", "time"=>"08:00"}]
-      medication_schedule.each do |id, schedule|
-        puts "id: #{id}"
-        puts "schedule: #{schedule}"
+      medication_schedule.to_a.each do |s|
+        id       = s[0]
+        schedule = s[1]
+
         if schedule["days"][wday] == true
-          # card = Card.new
           card             = {}
           card[:action_type] = "action"
           card[:shown_at]    = Time.zone.now
           card[:object_type] = "medication_schedule"
           card[:object_id]   = id
-
-
-          # TODO: card push date, card
+          card[:medication_schedule] = schedule
           Card.sava(uid, date_string, card)
         end
       end
-
-
     else
-      # // Check to make sure each has been generated
-      #       // var measExists = false;
-      #       var medsExists = false;
-      #       // var apptExists = false;
-      #       cardSnap.forEach(function(childSnap) {
-      #         // if (childSnap.val().object_type == CARD.CATEGORY.MEASUREMENTS_SCHEDULE) measExists = true;
-      #         if (childSnap.val().object_type == CARD.CATEGORY.MEDICATIONS_SCHEDULE) medsExists = true;
-      #         // if (childSnap.val().object_type == CARD.CATEGORY.APPOINTMENTS) apptExists = true;
-      #       });
-      #       if (!medsExists)
-      #         that.createFromObjectForDate(CARD.CATEGORY.MEDICATIONS_SCHEDULE, date)
-      #
-      #       // if (!measExists)
-      #       //   that.createFromObjectForDate(CARD.CATEGORY.MEASUREMENTS_SCHEDULE, date)
-      #       // if (!apptExists)
-      #       //   that.createFromObjectForDate(CARD.CATEGORY.APPOINTMENTS, date);
       return cards
     end
 

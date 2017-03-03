@@ -42,8 +42,8 @@ class API::V0::CardsController < API::V0::BaseController
 
     today = Card.format_date(Time.zone.today)
     tomm  = Card.format_date(Time.zone.tomorrow)
-    Card.generate_cards_for_date(@uid, today)
-    Card.generate_cards_for_date(@uid, tomm)
+    Card.generate_medication_schedule_cards_for_date(@uid, today)
+    Card.generate_medication_schedule_cards_for_date(@uid, tomm)
   end
 
 
