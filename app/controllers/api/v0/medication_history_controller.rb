@@ -5,7 +5,7 @@ class API::V0::MedicationHistoryController < API::V0::BaseController
   # GET /api/v0/medication_history?schedule_id=...
 
   def show
-    date_string = Card.format_date(Time.zone.now)
+    date_string = Time.zone.now.strftime("%F") #Card.format_date(Time.zone.now)
 
     if params["schedule_id"].blank?
       raise API::V0::Error.new("You need to supply schedule ID", 403) and return

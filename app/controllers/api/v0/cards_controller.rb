@@ -7,16 +7,15 @@ class API::V0::CardsController < API::V0::BaseController
     if params[:upcoming].present?
       @cards = []
 
+      today = Time.zone.today.strftime("%F")
+
       # Find all cards. Create medication schedule cards.
-      cards = Card.find_by_uid_and_date(@uid, Time.zone.now.strftime("%F"))
-      if cards.blank?
-        today = Card.format_date(Time.zone.today)
-        Card.generate_medication_schedule_cards_for_date(@uid, today)
-        cards = Card.find_by_uid_and_date(@uid, Time.zone.now.strftime("%F"))
-      end
+      cards = Cards.new(@uid, Time.zone.today)
+      cards.get()
+      cards.generate_from_medication_schedule_if_none()
 
       # Add the medication schedule only if it's not in the past.
-      cards.to_a.each do |c|
+      cards.data.to_a.each do |c|
         if c[1]["object_type"] == "medication_schedule"
           t = Time.zone.parse(c[1]["medication_schedule"]["time"])
           if (Time.zone.now < t + 2.hours)
@@ -28,9 +27,24 @@ class API::V0::CardsController < API::V0::BaseController
       # Find appointment cards.
       start_date = Time.zone.now
       end_date   = start_date + 1.week
-      @cards    += Card.appointment_cards_between(@uid, start_date, end_date)
+      @cards    += cards.appointment_cards_between(start_date, end_date)
     end
   end
+
+  #----------------------------------------------------------------------------
+  # GET /api/v0/cards/history
+  def history
+    end_date = Time.zone.parse(params[:end_date])
+
+    @cards = {}
+    (1..3).to_a.each do |d|
+      @end_date_string = (end_date - d.days).strftime("%F")
+      cards = Cards.new(@uid, end_date - d.days)
+      cards.get()
+      @cards[@end_date_string] = cards || {}
+    end
+  end
+
 
   #----------------------------------------------------------------------------
   # DELETE /api/v0/cards/force
@@ -38,12 +52,13 @@ class API::V0::CardsController < API::V0::BaseController
   # This OVERWRITES any existing schedule. Why? Because it's currently only
   # called from when creating/editing medication schedule.
   def force
-    Card.destroy_all_from(@uid, Time.zone.today)
+    cards.destroy()
 
-    today = Card.format_date(Time.zone.today)
-    tomm  = Card.format_date(Time.zone.tomorrow)
-    Card.generate_medication_schedule_cards_for_date(@uid, today)
-    Card.generate_medication_schedule_cards_for_date(@uid, tomm)
+    cards = Cards.new(@uid, Time.zone.today)
+    cards.generate_from_medication_schedule()
+
+    cards = Cards.new(@uid, Time.zone.tomorrow)
+    cards.generate_from_medication_schedule()
   end
 
 
@@ -53,30 +68,32 @@ class API::V0::CardsController < API::V0::BaseController
   # This OVERWRITES any existing schedule. Why? Because it's currently only
   # called from when creating/editing medication schedule.
   def appointment
-    puts "params; #{params[:appointment]}"
-    Card.generate_appointment_card(@uid, params[:firebase_id], params[:appointment])
+    begin
+      date = Time.zone.parse(params[:appointment][:date])
+    rescue
+      raise API::V0::Error.new("We couldn't parse the appointment date. Please try again!", 403) and return
+    end
+
+    # Construct the card hash.
+    card_hash               = {}
+    card_hash[:action_type] = "action"
+    card_hash[:object_type] = "appointment"
+    card_hash[:object_id]   = params[:firebase_id]
+    card_hash[:appointment]      = params[:appointment]
+
+    cards = Cards.new(@uid, date)
+    cards.add(card_hash)
+    render :json => {}, :status => :ok and return
   end
 
   #----------------------------------------------------------------------------
   # DELETE /api/v0/cards/destroy_appointment
-  # This method will force-generate cards for today and tomorrow.
-  # This OVERWRITES any existing schedule. Why? Because it's currently only
-  # called from when creating/editing medication schedule.
+
   def destroy_appointment
-    puts "@uid: #{@uid}"
-    if params[:firebase_id].blank?
-      puts "FIREBASE IS BLANK"
-      raise API::V0::Error.new("Firebase ID can't be blank", 403) and return
-    end
-
-    if params[:appointment_date].blank?
-      puts "APPIINTMENT DATE IS BLANK"
-      raise API::V0::Error.new("Appointment date can't be blank", 403) and return
-    end
-
-    puts "DELETEING CARD!"
-
-    Card.destroy_appointment_card(@uid, params[:firebase_id], params[:appointment_date])
+    date = Time.zone.parse(params[:appointment_date])
+    card = Card.new(@uid, date, params[:firebase_id])
+    card.destroy()
+    render :json => {}, :status => :ok and return
   end
 
 end

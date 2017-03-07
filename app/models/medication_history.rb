@@ -1,4 +1,21 @@
-class MedicationHistory < ActiveRecord::Base
+class MedicationHistory
+  def initialize(uid, date)
+    @uid  = uid
+    @date = date
+    self.class.send(:attr_accessor, "uid")
+    self.class.send(:attr_accessor, "date")
+    self.class.send(:attr_accessor, "data")
+
+    @firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
+    self.class.send(:attr_accessor, "firebase")
+    return self
+  end
+
+  def get
+    self.data = self.firebase.get("patients/#{self.uid}/medication_histories/#{self.date.strftime('%F')}").body
+    return self.data
+  end
+
   # uid = 1dae2ad5-9d3c-407c-9d8e-6f3796f0a2ec
   def self.find_by_uid(uid)
     firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
@@ -14,13 +31,6 @@ class MedicationHistory < ActiveRecord::Base
     firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
     puts "medication_history_id, = #{medication_history_id}\n\n\n"
     response = firebase.update("patients/#{uid}/medication_histories/#{date_string}/#{medication_history_id}", data)
-  end
-
-  def self.find_by_uid_and_date(uid, date_string)
-    histories = self.find_by_uid(uid)
-    match = histories.find {|key, value| key == date_string}
-    return {} if match.blank?
-    return {:id => match[0], :data => match[1]}
   end
 
   def self.find_all_by_date_and_schedule_id(uid, date_string, schedule_id)
@@ -63,7 +73,7 @@ class MedicationHistory < ActiveRecord::Base
       #       Card.createAdHoc(CARD.CATEGORY.MEDICATIONS_CABINET, cabHistRef.key(), (new Date()).toISOString())
 
     else
-      date_string = Card.format_date(Time.zone.now)
+      date_string = Time.zone.now.strftime("%F") #Card.format_date(Time.zone.now)
       existing_history_for_date     = self.better_find_by_date(uid, date_string)
 
       # At this point,

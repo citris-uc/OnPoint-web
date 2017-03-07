@@ -1,4 +1,21 @@
-class MedicationSchedule < ActiveRecord::Base
+class MedicationSchedule
+  def initialize(uid)
+    @uid  = uid
+    self.class.send(:attr_accessor, "uid")
+    self.class.send(:attr_accessor, "data")
+
+    @firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
+    self.class.send(:attr_accessor, "firebase")
+
+    return self
+  end
+
+  def get
+    self.data = self.firebase.get("patients/#{self.uid}/medication_schedule").body
+    return self.data
+  end
+
+
 
   def self.default_schedule
     schedule = [
