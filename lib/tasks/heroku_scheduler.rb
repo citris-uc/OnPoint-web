@@ -7,4 +7,9 @@ namespace :heroku_scheduler do
   task :generate_daily_cards => [:environment] do
     DailyCardsWorker.perform_async()
   end
+
+  desc "Calculates completes on all cards (in the past)"
+  task :calculate_completeness => [:environment] do
+    CardsWorker.perform_async()
+  end
 end
