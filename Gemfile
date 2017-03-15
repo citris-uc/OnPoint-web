@@ -9,6 +9,9 @@ gem "ocr_space"
 gem "jwt", "~> 1.5.4"
 
 gem "foreman"
+gem 'oj', '~> 2.12.14'
+
+gem 'rollbar'
 gem 'haml'
 gem "httparty", "~> 0.11"
 
