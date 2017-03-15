@@ -40,13 +40,15 @@ class API::V0::CardsController < API::V0::BaseController
     end
   end
 
-
   #----------------------------------------------------------------------------
   # DELETE /api/v0/cards/force
   # This method will force-generate cards for today and tomorrow.
   # This OVERWRITES any existing schedule. Why? Because it's currently only
   # called from when creating/editing medication schedule.
   def force
+    cards = Cards.new(@uid, Time.zone.today)
+    cards.destroy()
+    cards = Cards.new(@uid, Time.zone.tomorrow)
     cards.destroy()
 
     cards = Cards.new(@uid, Time.zone.today)

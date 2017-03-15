@@ -37,7 +37,7 @@ class Cards
   #----------------------------------------------------------------------------
 
   def destroy
-    date = date.beginning_of_day
+    date = self.date.beginning_of_day
     [date, date + 1.day, date + 2.days, date + 3.days].each do |d|
       self.firebase.delete("patients/#{self.uid}/cards/#{d.strftime("%F")}")
     end
@@ -81,7 +81,6 @@ class Cards
 
     ms = MedicationSchedule.new(uid)
     ms.get()
-
 
     ms.data.to_a.each do |slot|
       object_id = slot[0]
