@@ -16,15 +16,7 @@ class API::V0::CardsController < API::V0::BaseController
 
       # Add the medication schedule only if it's not in the past.
       cards.data.to_a.each do |c|
-        # Do not include this if there are no meds to take.
-        next if c[1]["medication_schedule"]["medications"].blank?
-
-        if c[1]["object_type"] == "medication_schedule"
-          t = Time.zone.parse(c[1]["medication_schedule"]["time"])
-          if (Time.zone.now < t + 2.hours)
-            @cards << c
-          end
-        end
+        @cards << c
       end
 
       # Find appointment cards.
