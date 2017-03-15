@@ -96,7 +96,6 @@ class Cards
       # At this point, there is no card with this slot AND it matches the weekday.
       # Let's create the card.
       card_hash = {}
-      card_hash[:action_type] = "action"
       card_hash[:object_type] = "medication_schedule"
       card_hash[:object_id]   = object_id
       card_hash[:medication_schedule] = slot_hash
