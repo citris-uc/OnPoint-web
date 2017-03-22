@@ -105,8 +105,11 @@ class Image
       end
     end
 
+    puts "extract_drug_name#self.raw_text: #{self.raw_text}"
     str_split = self.raw_text.split()
     for word in str_split
+      word = word.strip
+      puts "|#{word}|"
       result = find_drug_name_match(word)
       if result
         self.drug_name = result
@@ -135,8 +138,8 @@ class Image
 
   def find_drug_name_match(str1)
     for drug_name in $drug_list
-      if drug_name == str1
-        return drug_name
+      if drug_name.strip.downcase == str1.strip.downcase
+        return drug_name.strip.downcase.capitalize
       end
     end
 
