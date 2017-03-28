@@ -67,4 +67,18 @@ class MedicationSchedule
     return schedules[card["object_id"]]
   end
 
+
+  def update(id, data)
+    puts "Updating id = #{id} with data = #{data}"
+
+    response = self.firebase.update("patients/#{self.uid}/medication_schedule/#{id}/", data)
+    return response
+  end
+
+  def self.generate_default_schedule(uid)
+    self.default_schedule.each do |slot|
+      MedicationSchedule.save(uid, slot.merge("medications" => []))
+    end
+  end
+
 end

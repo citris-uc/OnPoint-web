@@ -26,27 +26,36 @@ class API::V0::MedicationScheduleController < API::V0::BaseController
   # ]
   # {"-K_1l5MScJdm1tLxwpWr"=>{"days"=>[true, true, true, true, true, true, true], "medications"=>["Lasix", "Toprol XL", "Zestril", "Coumadin", "Riomet"], "slot"=>"Morning", "time"=>"08:00"}, "-K_1l5MWAI_ppaHQiKdM"=>{"days"=>[true, true, true, true, true, true, true], "medications"=>["Lasix", "Toprol XL", "Zestril", "Riomet"], "slot"=>"Afternoon", "time"=>"13:00"}, "-K_1l5M_bVZP4sOZD4Fy"=>{"days"=>[true, true, true, true, true, true, true], "medications"=>["Lipitor"], "slot"=>"Evening", "time"=>"19:00"}}
   def create
+    MedicationSchedule.generate_default_schedule(@uid)
+  end
 
-    existing_schedules = MedicationSchedule.find_by_uid(@uid).to_a.map {|slot| {:id => slot[0], :data => slot[1]} }
-    MedicationSchedule.default_schedule.each do |slot|
-      puts "slot: #{slot.inspect}"
-      ids = Medication.find_ids_by_names(@uid, slot["medications"])
-      puts "ids: #{ids}\n\n\n"
+  #----------------------------------------------------------------------------
+  # PUT /api/v0/medication_schedule/remove_medication
 
-      # raise "existing_schedules: #{existing_schedules.inspect}"
-      matching_schedule = existing_schedules.find {|s| puts "s: #{s}"; s[:data]["slot"].downcase == slot["name"].downcase && s[:data]["time"] == slot["time"]}
-      if matching_schedule.present?
-        # Overwrite the medications already stored.
-        data = matching_schedule[:data]
-        data["medications"] = ids
-        MedicationSchedule.update(@uid, matching_schedule[:id], data)
-      else
-        data = slot
-        data["slot"]        = data["name"]
-        data["medications"] = ids
-        MedicationSchedule.save(@uid, data)
+  def remove_medication
+    # raise "params: #{params.inspect}"
+    # @drug = Drug.new(params[:rxcui])
+
+    med_id = params[:medication]["$id"]
+    # Drug.destroy(@uid, )
+
+    # Iterate over all the schedules, removing the specific drug
+    @schedule = MedicationSchedule.new(@uid)
+    @schedule.get()
+    puts "@schedule.data: #{@schedule.data.inspect}\n\n\n"
+    @schedule.data.to_a.each do |data|
+      schedule_id = data[0]
+      hash        = data[1]
+
+      if hash["medications"].present?
+        new_medications = hash["medications"].find_all {|id, med_data| med_data["id"] != med_id}
+        puts "Just removed med_id = #{med_id} from hash[medications] = #{hash["medications"]}"
+
+        hash["medications"] = new_medications.to_h
+        @schedule.update(schedule_id, hash)
       end
     end
+
 
   end
 

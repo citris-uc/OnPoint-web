@@ -25,6 +25,7 @@ Rails.application.routes.draw do
       end
 
       resources :medication_schedule, :only => [:create] do
+        put :remove_medication, :on => :collection
       end
 
       resource :medication_history, :only => [:show], :controller => :medication_history

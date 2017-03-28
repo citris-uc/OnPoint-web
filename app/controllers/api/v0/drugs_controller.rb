@@ -14,6 +14,8 @@ class API::V0::DrugsController < API::V0::BaseController
     render :json => drugs, :status => :ok and return
   end
 
+  #----------------------------------------------------------------------------
+
   def dailymed
     drugs = []
     data = Drug.find_by_query_and_dailymed(params[:query].downcase.strip)
