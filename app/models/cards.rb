@@ -86,12 +86,17 @@ class Cards
       object_id = slot[0]
       slot_hash = slot[1]
 
+      puts "Looking at slot hash = #{slot_hash}"
+
       # Skip this slot if today's cards already have it.
       next if self.data && self.data.values.find {|v| v["object_id"] == object_id}
 
       # Skip this slot if today's date doesn't match when it should be displayed.
       week_day = self.date.wday
       next unless slot_hash["days"][week_day] == true
+
+      # Do not generate a card if there are no medications.
+      next if slot_hash["medications"].blank?
 
       # At this point, there is no card with this slot AND it matches the weekday.
       # Let's create the card.
