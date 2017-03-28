@@ -13,6 +13,7 @@ class API::V0::CardsController < API::V0::BaseController
       cards = Cards.new(@uid, Time.zone.today)
       cards.get()
       cards.generate_from_medication_schedule_if_none()
+      cards.get()
 
       # Add the medication schedule only if it's not in the past.
       cards.data.to_a.each do |c|
