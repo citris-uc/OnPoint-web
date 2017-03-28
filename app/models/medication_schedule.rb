@@ -23,19 +23,16 @@ class MedicationSchedule
         time: "08:00",
         name: "Morning",
         days: [true, true, true, true, true, true, true], # array descirbing days of week to do this action
-        medications: ["Lasix", "Toprol XL", "Zestril", "Coumadin", "Riomet"]
       }.with_indifferent_access,
       {
         time: "13:00",
         name: "Afternoon",
         days: [true, true, true, true, true, true, true], # array descirbing days of week to do this action,
-        medications: ["Lasix", "Toprol XL", "Zestril", "Riomet"]
       }.with_indifferent_access,
       {
         time: "19:00",
         name: "Evening",
         days: [true, true, true, true, true, true, true], # array descirbing days of week to do this action,
-        medications: ["Lipitor"]
       }.with_indifferent_access
     ]
 
