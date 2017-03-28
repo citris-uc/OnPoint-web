@@ -1,1 +1,1 @@
-json.(@drug, :rxcui, :name, :purpose)
+json.(@drug, :rxcui, :name)
