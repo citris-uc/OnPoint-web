@@ -40,7 +40,7 @@ class Card
     self.firebase.delete("patients/#{self.uid}/cards/#{self.date.strftime("%F")}/#{self.id}")
   end
 
-  def calculate_completeness(card_data)
+  def calculate_completeness(card_data, date)
     if card_data["object_type"] == "appointment"
       card_data["missed"]    = false
       card_data["completed"] = true
@@ -63,7 +63,6 @@ class Card
       end
 
       # Load the associated medication history and see if the person adheres to it.
-      # TODO: FWILL FAIL
       history = MedicationHistory.new(uid, date)
       history.get()
       if history.data.blank?

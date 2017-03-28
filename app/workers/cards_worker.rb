@@ -19,7 +19,7 @@ class CardsWorker
 
         cards.data.to_a.each do |card_id, card_data|
           card = Card.new(uid, date, card_id)
-          card.calculate_completeness(card_data)
+          card.calculate_completeness(card_data, date)
         end
       end
     end
