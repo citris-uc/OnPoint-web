@@ -39,17 +39,6 @@ class MedicationHistory
     return history.find_all {|id, data| data["medication_schedule_id"] == schedule_id}
   end
 
-  def self.find_by_date_and_schedule_id_and_medication_id(uid, date_string, schedule_id, medication_id)
-    history = self.better_find_by_date(uid, date_string)
-    return nil if history.blank?
-    match = history.find {|id, data| data["medication_schedule_id"] == schedule_id && data["medication_id"] == medication_id}
-    return nil if match.blank?
-    return {
-      :id => match[0],
-      :data => match[1]
-    }
-  end
-
   def self.better_find_by_date(uid, date_string)
     firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
     return firebase.get("patients/#{uid}/medication_histories/#{date_string}").body
@@ -64,32 +53,23 @@ class MedicationHistory
       history["skipped_at"] = Time.zone.now
     end
 
-    if schedule_id == "cabinet"
-      # "TODO"
-      #       instanceFB.reason = typeof(medication.reason)==='undefined'? null:medication.reason;
-      #       var medRef = snapshot.ref();
-      #       cabHistRef = medRef.push(instanceFB);
-      #       // TODO :This no longer exists because we use "force" in Rails.
-      #       Card.createAdHoc(CARD.CATEGORY.MEDICATIONS_CABINET, cabHistRef.key(), (new Date()).toISOString())
+    histories = MedicationHistory.new(uid, Time.zone.now)
+    histories.get()
 
+    # At this point,
+    if histories.data.blank?
+      self.create(uid, Time.zone.now.strftime("%F"), history)
     else
-      date_string = Time.zone.now.strftime("%F") #Card.format_date(Time.zone.now)
-      existing_history_for_date     = self.better_find_by_date(uid, date_string)
+      puts "histories.data; #{histories.data.inspect}"
 
-      # At this point,
-      if existing_history_for_date.blank?
-        self.create(uid, date_string, history)
+      matching_history = histories.data.find {|id, data| data["medication_schedule_id"] == schedule_id && data["medication_id"] == medication_id}
+
+      if matching_history.blank?
+        self.create(uid, Time.zone.now.strftime("%F"), history)
       else
-        # If this exists, let's go ahead and make sure we're not updating one.
-        match = self.find_by_date_and_schedule_id_and_medication_id(uid, date_string, schedule_id, medication_id)
-        if match.blank?
-          self.create(uid, date_string, history)
-        else
-          self.update(uid, date_string, match[:id], history)
-        end
-
+        self.update(uid, Time.zone.now.strftime("%F"), matching_history[0], history)
       end
-
     end
+
   end
 end

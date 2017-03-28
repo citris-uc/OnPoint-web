@@ -63,6 +63,7 @@ class Card
       end
 
       # Load the associated medication history and see if the person adheres to it.
+      # TODO: FWILL FAIL
       history = MedicationHistory.new(uid, date)
       history.get()
       if history.data.blank?
