@@ -61,9 +61,7 @@ class API::V0::CardsController < API::V0::BaseController
 
   #----------------------------------------------------------------------------
   # PUT /api/v0/cards/appointment
-  # This method will force-generate cards for today and tomorrow.
-  # This OVERWRITES any existing schedule. Why? Because it's currently only
-  # called from when creating/editing medication schedule.
+
   def appointment
     begin
       date = Time.zone.parse(params[:appointment][:date])
@@ -76,7 +74,7 @@ class API::V0::CardsController < API::V0::BaseController
     card_hash[:action_type] = "action"
     card_hash[:object_type] = "appointment"
     card_hash[:object_id]   = params[:firebase_id]
-    card_hash[:appointment]      = params[:appointment]
+    card_hash[:appointment] = params[:appointment]
 
     cards = Cards.new(@uid, date)
     cards.add(card_hash)
@@ -88,8 +86,13 @@ class API::V0::CardsController < API::V0::BaseController
 
   def destroy_appointment
     date = Time.zone.parse(params[:appointment_date])
-    card = Card.new(@uid, date, params[:firebase_id])
-    card.destroy()
+    cards = Cards.new(@uid, date)
+    cards.get()
+    matching_appt_card = cards.data.find {|cid, cdata| cdata["object_id"] == params[:firebase_id]}
+    if matching_appt_card.present?
+      card = Card.new(@uid, date, matching_appt_card[0])
+      card.destroy()
+    end
     render :json => {}, :status => :ok and return
   end
 
