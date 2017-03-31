@@ -1,5 +1,3 @@
-json.title "Medication Reminder"
-
 if card["object_type"] == "medication_schedule"
   json.medications_length card["medication_schedule"]["medications"] && card["medication_schedule"]["medications"].keys.length
   json.description card["medication_schedule"]["medications"] ? "" : "You don't have any medications for this slot"

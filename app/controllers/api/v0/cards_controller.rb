@@ -19,11 +19,6 @@ class API::V0::CardsController < API::V0::BaseController
       cards.data.to_a.each do |c|
         @cards << c
       end
-
-      # Find appointment cards.
-      start_date = Time.zone.now
-      end_date   = start_date + 1.week
-      @cards    += cards.appointment_cards_between(start_date, end_date)
     end
   end
 
