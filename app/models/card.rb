@@ -50,6 +50,7 @@ class Card
 
 
     if card_data["object_type"] == "medication_schedule"
+      # Create a slot with medication schedule if it doesn't exist.
       if card_data["medication_schedule"].blank? || card_data["medication_schedule"]["medications"].blank?
         slot = Slot.new(uid, card_data["object_id"])
         slot.get()
@@ -62,29 +63,37 @@ class Card
         return card_data
       end
 
-      # Load the associated medication history and see if the person adheres to it.
+      # At this point, we have the medication schedule AND the medications. Extract
+      # all the medications.
+      all_med_ids = card_data["medication_schedule"]["medications"].values.map {|v| v["id"]}
+
+      # Load the associated medication history and see if the person adheres to it. If
+      # we don't have the data, that means the person didn't adhere. Let's set it
+      # to number of drugs missed equal to number of medications needed to take.
       history = MedicationHistory.new(uid, date)
       history.get()
       if history.data.blank?
-        card_data["missed"]    = true
-        card_data["completed"] = false
-        self.save(card_data)
+        # TODO: Need to figure out what to do if no medication history exists.
+        # card_data["skipped"]   = all_med_ids
+        # card_data["taken"]     = []
+        # card_data["completed"] = all_med_ids
+        # self.save(card_data)
         return card_data
       end
 
+      # Scope the history to the corresponding medication schedule ID.
+      scoped_history = history.data.values.find_all {|hist| hist["medication_schedule_id"] == card_data["object_id"]}
+
       # At this point, we have all the medications and the medication history
-      # to see if the person adheres.
-      med_ids_adhered_to = history.data.values.map {|v| v["medication_id"]}
-      all_med_ids        = card_data["medication_schedule"]["medications"].values.map {|v| v["id"]}
+      # to see if the person adheres. Let's calculate number of those that were
+      # taken and number of those that were skipped.
+      med_ids_completed = scoped_history.map {|v| v["medication_id"]}
+      med_ids_taken     = scoped_history.find_all {|h| h["taken_at"].present?}.map {|v| v["medication_id"]}
+      med_ids_skipped   = scoped_history.find_all {|h| h["skipped_at"].present?}.map {|v| v["medication_id"]}
 
-      if all_med_ids.length == med_ids_adhered_to.length
-        card_data["missed"]    = false
-        card_data["completed"] = true
-      else
-        card_data["missed"]    = true
-        card_data["completed"] = false
-      end
-
+      card_data["skipped"]   = med_ids_skipped
+      card_data["taken"]     = med_ids_taken
+      card_data["completed"] = med_ids_completed
       self.save(card_data)
       return card_data
     end

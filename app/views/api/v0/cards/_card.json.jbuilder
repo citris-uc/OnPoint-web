@@ -15,7 +15,8 @@ else
 end
 
 
-json.missed card["missed"]
+json.taken card["taken"]
+json.skipped card["skipped"]
 json.completed card["completed"]
 
 json.object_id card["object_id"]
