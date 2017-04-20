@@ -15,8 +15,6 @@ class MedicationSchedule
     return self.data
   end
 
-
-
   def self.default_schedule
     schedule = [
       {

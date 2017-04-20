@@ -21,7 +21,8 @@ Rails.application.routes.draw do
       end
 
       resources :medications, :only => [:create] do
-        put :decide, :on => :collection
+        put :decide,     :on => :collection
+        put :decide_all, :on => :collection
       end
 
       resources :medication_schedule, :only => [:create] do

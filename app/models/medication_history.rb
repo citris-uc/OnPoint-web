@@ -70,6 +70,17 @@ class MedicationHistory
         self.update(uid, Time.zone.now.strftime("%F"), matching_history[0], history)
       end
     end
+  end
 
+  def self.decide_all(uid, schedule_id, choice)
+    schedule = MedicationSchedule.new(uid)
+    schedule.get()
+
+    medications = schedule.data[schedule_id] && schedule.data[schedule_id]["medications"]
+    if medications.present?
+      med_ids = medications.each do |key, m|
+        self.create_or_update(uid, m["id"], schedule_id, choice)
+      end
+    end
   end
 end

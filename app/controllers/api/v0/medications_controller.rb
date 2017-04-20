@@ -12,6 +12,16 @@ class API::V0::MedicationsController < API::V0::BaseController
   end
 
   #----------------------------------------------------------------------------
+  # PUT /api/v0/medications/decide_all
+
+  def decide_all
+    history = MedicationHistory.decide_all(@uid, params["schedule_id"], params["choice"])
+    if history
+      render :json => {}, :status => :ok and return
+    end
+  end
+
+  #----------------------------------------------------------------------------
   # POST /api/v0/medications/
 
   def create
