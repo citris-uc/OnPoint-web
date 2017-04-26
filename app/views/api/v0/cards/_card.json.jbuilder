@@ -21,3 +21,5 @@ json.completed card["completed"]
 
 json.object_id card["object_id"]
 json.object_type card["object_type"]
+
+json.date card["date"]

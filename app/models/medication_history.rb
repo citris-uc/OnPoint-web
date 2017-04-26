@@ -1,9 +1,13 @@
 class MedicationHistory
-  def initialize(uid, date)
-    @uid  = uid
-    @date = date
+  #----------------------------------------------------------------------------
+
+  def initialize(uid, date, slot_id = nil)
+    @uid     = uid
+    @date    = date
+    @slot_id = slot_id
     self.class.send(:attr_accessor, "uid")
     self.class.send(:attr_accessor, "date")
+    self.class.send(:attr_accessor, "slot_id")
     self.class.send(:attr_accessor, "data")
 
     @firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
@@ -11,76 +15,74 @@ class MedicationHistory
     return self
   end
 
+  #----------------------------------------------------------------------------
+
   def get
-    self.data = self.firebase.get("patients/#{self.uid}/medication_histories/#{self.date.strftime('%F')}").body
+    array     = self.firebase.get("patients/#{self.uid}/medication_histories/#{self.date.strftime('%F')}/#{self.slot_id}").body
+    self.data = array.to_h
     return self.data
   end
 
-  # uid = 1dae2ad5-9d3c-407c-9d8e-6f3796f0a2ec
-  def self.find_by_uid(uid)
-    firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
-    return firebase.get("patients/#{uid}/medication_histories").body
+  #----------------------------------------------------------------------------
+
+  def update(medication_id, data)
+    data.reject! {|k,v| k.include?("$")}
+    response = self.firebase.update("patients/#{self.uid}/medication_histories/#{self.date.strftime('%F')}/#{self.id}/#{medication_id}", data)
   end
 
-  def self.create(uid, date_string, data)
-    firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
-    response = firebase.push("patients/#{uid}/medication_histories/#{date_string}", data)
+  #----------------------------------------------------------------------------
+
+  def create(slot_id, medication_id, data)
+    data[:medication].reject! {|k,v| k.to_s.include?("$")}
+    return self.firebase.set("patients/#{self.uid}/medication_histories/#{self.date.strftime('%F')}/#{slot_id}/#{medication_id}", data)
   end
 
-  def self.update(uid, date_string, medication_history_id, data)
-    firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
-    puts "medication_history_id, = #{medication_history_id}\n\n\n"
-    response = firebase.update("patients/#{uid}/medication_histories/#{date_string}/#{medication_history_id}", data)
-  end
+  #----------------------------------------------------------------------------
 
-  def self.find_all_by_date_and_schedule_id(uid, date_string, schedule_id)
-    history = self.better_find_by_date(uid, date_string)
-    return nil if history.blank?
-    return history.find_all {|id, data| data["medication_schedule_id"] == schedule_id}
-  end
-
-  def self.better_find_by_date(uid, date_string)
-    firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
-    return firebase.get("patients/#{uid}/medication_histories/#{date_string}").body
-  end
-
-  def self.create_or_update(uid, medication_id, schedule_id, choice)
-
-    history = {medication_id: medication_id, medication_schedule_id: schedule_id, :taken_at => nil, :skipped_at => nil}
+  def decide(medication, choice)
+    medication_id = medication["$id"]
+    data_hash = {medication: medication.to_h.with_indifferent_access, :taken_at => nil, :skipped_at => nil}
     if choice == "take"
-      history["taken_at"] = Time.zone.now
+      data_hash["taken_at"] = Time.zone.now
     elsif choice == "skip"
-      history["skipped_at"] = Time.zone.now
+      data_hash["skipped_at"] = Time.zone.now
     end
 
-    histories = MedicationHistory.new(uid, Time.zone.now)
-    histories.get()
-
-    # At this point,
-    if histories.data.blank?
-      self.create(uid, Time.zone.now.strftime("%F"), history)
+    # Update the history.
+    if self.data.blank?
+      resp = self.create(self.slot_id, medication_id, data_hash)
     else
-      puts "histories.data; #{histories.data.inspect}"
+      self.update(medication_id, data_hash)
+    end
 
-      matching_history = histories.data.find {|id, data| data["medication_schedule_id"] == schedule_id && data["medication_id"] == medication_id}
+    # Update the corresponding slot.
+    slot = Slot.new(self.uid, self.slot_id)
+    slot.get()
+    num_meds = slot.data["medications"].length
+    self.get()
 
-      if matching_history.blank?
-        self.create(uid, Time.zone.now.strftime("%F"), history)
-      else
-        self.update(uid, Time.zone.now.strftime("%F"), matching_history[0], history)
-      end
+    if self.data.try(:keys).try(:length).to_i == num_meds
+      slot.update({status: "completed"})
+    elsif slot.past?
+      slot.update({status: "overdue"})
+    else
+      slot.update({status: "inprogress"})
     end
   end
 
-  def self.decide_all(uid, schedule_id, choice)
-    schedule = MedicationSchedule.new(uid)
+  #----------------------------------------------------------------------------
+
+  def decide_all(choice)
+    schedule = MedicationSchedule.new(self.uid)
     schedule.get()
 
-    medications = schedule.data[schedule_id] && schedule.data[schedule_id]["medications"]
+    medications = schedule.data[self.slot_id] && schedule.data[self.slot_id]["medications"]
     if medications.present?
       med_ids = medications.each do |key, m|
-        self.create_or_update(uid, m["id"], schedule_id, choice)
+        self.decide(m, choice)
       end
     end
   end
+
+  #----------------------------------------------------------------------------
 end

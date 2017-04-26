@@ -38,10 +38,21 @@ GEM
       i18n (~> 0.7)
       minitest (~> 5.1)
       tzinfo (~> 1.1)
+    addressable (2.5.0)
+      public_suffix (~> 2.0, >= 2.0.2)
     arel (7.1.4)
     bcrypt (3.1.11)
     builder (3.2.2)
     byebug (9.0.6)
+    capybara (2.12.0)
+      addressable
+      mime-types (>= 1.16)
+      nokogiri (>= 1.3.3)
+      rack (>= 1.0.0)
+      rack-test (>= 0.5.4)
+      xpath (~> 2.0)
+    cliver (0.3.2)
+    coderay (1.1.1)
     coffee-rails (4.2.1)
       coffee-script (>= 2.2.0)
       railties (>= 4.0.0, < 5.2.x)
@@ -52,6 +63,9 @@ GEM
     colorize (0.8.1)
     concurrent-ruby (1.0.4)
     connection_pool (2.2.1)
+    crack (0.4.3)
+      safe_yaml (~> 1.0.0)
+    database_cleaner (1.5.3)
     debug_inspector (0.0.2)
     devise (4.2.0)
       bcrypt (~> 3.0)
@@ -59,8 +73,16 @@ GEM
       railties (>= 4.1.0, < 5.1)
       responders
       warden (~> 1.2.3)
+    diff-lcs (1.3)
     erubis (2.7.0)
     execjs (2.7.0)
+    factory_girl (4.8.0)
+      activesupport (>= 3.0.0)
+    factory_girl_rails (4.8.0)
+      factory_girl (~> 4.8.0)
+      railties (>= 3.0.0)
+    faker (1.7.2)
+      i18n (~> 0.5)
     ffi (1.9.14)
     figaro (1.1.1)
       thor (~> 0.14)
@@ -73,6 +95,7 @@ GEM
       activesupport (>= 4.1.0)
     haml (4.0.7)
       tilt
+    hashdiff (0.3.2)
     httmultiparty (0.3.16)
       httparty (>= 0.7.3)
       mimemagic
@@ -90,6 +113,8 @@ GEM
       thor (>= 0.14, < 2.0)
     json (2.0.2)
     jwt (1.5.6)
+    launchy (2.4.3)
+      addressable (~> 2.3)
     listen (3.0.8)
       rb-fsevent (~> 0.9, >= 0.9.4)
       rb-inotify (~> 0.9, >= 0.9.7)
@@ -118,6 +143,15 @@ GEM
     oj (2.12.14)
     orm_adapter (0.5.0)
     pg (0.19.0)
+    poltergeist (1.10.0)
+      capybara (~> 2.1)
+      cliver (~> 0.3.1)
+      websocket-driver (>= 0.2.0)
+    pry (0.10.4)
+      coderay (~> 1.1.0)
+      method_source (~> 0.8.1)
+      slop (~> 3.4)
+    public_suffix (2.0.5)
     puma (3.6.2)
     rack (2.0.1)
     rack-cors (0.4.0)
@@ -157,6 +191,24 @@ GEM
       railties (>= 4.2.0, < 5.1)
     rollbar (2.11.5)
       multi_json
+    rspec-core (3.5.4)
+      rspec-support (~> 3.5.0)
+    rspec-expectations (3.5.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.5.0)
+    rspec-mocks (3.5.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.5.0)
+    rspec-rails (3.5.2)
+      actionpack (>= 3.0)
+      activesupport (>= 3.0)
+      railties (>= 3.0)
+      rspec-core (~> 3.5.0)
+      rspec-expectations (~> 3.5.0)
+      rspec-mocks (~> 3.5.0)
+      rspec-support (~> 3.5.0)
+    rspec-support (3.5.0)
+    safe_yaml (1.0.4)
     sass (3.4.23)
     sass-rails (5.0.6)
       railties (>= 4.0.0, < 6)
@@ -169,8 +221,11 @@ GEM
       connection_pool (~> 2.2, >= 2.2.0)
       rack-protection (>= 1.5.0)
       redis (~> 3.2, >= 3.2.1)
+    slop (3.6.0)
     spring (2.0.0)
       activesupport (>= 4.2)
+    spring-commands-rspec (1.0.4)
+      spring (>= 0.9.1)
     spring-watcher-listen (2.0.1)
       listen (>= 2.7, < 4.0)
       spring (>= 1.2, < 3.0)
@@ -184,6 +239,7 @@ GEM
     thor (0.19.4)
     thread_safe (0.3.5)
     tilt (2.0.5)
+    timecop (0.8.1)
     turbolinks (5.0.1)
       turbolinks-source (~> 5)
     turbolinks-source (5.0.0)
@@ -198,17 +254,27 @@ GEM
       activemodel (>= 5.0)
       debug_inspector
       railties (>= 5.0)
+    webmock (2.1.0)
+      addressable (>= 2.3.6)
+      crack (>= 0.3.2)
+      hashdiff
     websocket-driver (0.6.4)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.2)
+    xpath (2.0.0)
+      nokogiri (~> 1.3)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   byebug
+  capybara
   coffee-rails (~> 4.2)
+  database_cleaner
   devise
+  factory_girl_rails (~> 4.0)
+  faker
   figaro
   firebase
   foreman
@@ -217,22 +283,29 @@ DEPENDENCIES
   jbuilder (~> 2.5)
   jquery-rails
   jwt (~> 1.5.4)
+  launchy
   listen (~> 3.0.5)
   ocr_space
   oj (~> 2.12.14)
   pg
+  poltergeist
+  pry
   puma (~> 3.0)
   rack-cors
   rails (~> 5.0.0, >= 5.0.0.1)
   rollbar
+  rspec-rails (~> 3.2)
   sass-rails (~> 5.0)
   sidekiq
   spring
+  spring-commands-rspec
   spring-watcher-listen (~> 2.0.0)
+  timecop
   turbolinks (~> 5)
   tzinfo-data
   uglifier (>= 1.3.0)
   web-console
+  webmock
 
 BUNDLED WITH
    1.12.5

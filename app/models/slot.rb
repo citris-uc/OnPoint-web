@@ -13,7 +13,16 @@ class Slot
   end
 
   def get
-    self.data = self.firebase.get("patients/#{uid}/medication_schedule/#{self.id}/").body
+    self.data = self.firebase.get("patients/#{self.uid}/medication_schedule/#{self.id}/").body
     return self.data
+  end
+
+  # NOTE: Updates, but does not delete ommitted children.
+  def update(data)
+    return self.firebase.update("patients/#{self.uid}/medication_schedule/#{self.id}/", data)
+  end
+
+  def past?
+    return Time.zone.now > Time.zone.parse(self.data["time"]) + 2.hours
   end
 end
