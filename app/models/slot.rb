@@ -1,6 +1,6 @@
 class Slot
   def initialize(uid, id)
-    @uid  = uid
+    @uid = uid
     @id  = id
     self.class.send(:attr_accessor, "uid")
     self.class.send(:attr_accessor, "id")

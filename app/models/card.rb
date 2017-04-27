@@ -32,7 +32,7 @@ class Card
     return self.data
   end
 
-  def save(data)
+  def update(data)
     self.firebase.update("patients/#{self.uid}/cards/#{self.date.strftime("%F")}/#{self.id}", data)
   end
 
@@ -40,62 +40,72 @@ class Card
     self.firebase.delete("patients/#{self.uid}/cards/#{self.date.strftime("%F")}/#{self.id}")
   end
 
-  def calculate_completeness(card_data, date)
-    if card_data["object_type"] == "appointment"
-      card_data["missed"]    = false
-      card_data["completed"] = true
-      self.save(card_data)
-      return card_data
+
+  def calculate_status
+    self.get()
+    if self.data["object_type"] == "appointment"
+      self.data["missed"]    = false
+      self.data["completed"] = true
+      self.update(self.data)
+      return self.data
     end
 
-
-    if card_data["object_type"] == "medication_schedule"
+    if self.data["object_type"] == "medication_schedule"
       # Create a slot with medication schedule if it doesn't exist.
-      if card_data["medication_schedule"].blank? || card_data["medication_schedule"]["medications"].blank?
-        slot = Slot.new(uid, card_data["object_id"])
+      if self.data["medication_schedule"].blank? || self.data["medication_schedule"]["medications"].blank?
+        slot = Slot.new(uid, self.data["object_id"])
         slot.get()
 
-        card_data["medication_schedule"] = slot.data
-
-        card_data["missed"]    = true
-        card_data["completed"] = false
-        self.save(card_data)
-        return card_data
+        self.data["medication_schedule"] = slot.data
+        self.update(self.data)
       end
 
       # At this point, we have the medication schedule AND the medications. Extract
       # all the medications.
-      all_med_ids = card_data["medication_schedule"]["medications"].values.map {|v| v["id"]}
+      slot = Slot.new(uid, self.data["object_id"])
+      slot.get()
+      med_ids = slot.data["medications"].keys
 
       # Load the associated medication history and see if the person adheres to it. If
       # we don't have the data, that means the person didn't adhere. Let's set it
       # to number of drugs missed equal to number of medications needed to take.
-      history = MedicationHistory.new(uid, date)
+      history = MedicationHistory.new(uid, self.date, self.data["object_id"])
       history.get()
       if history.data.blank?
         # TODO: Need to figure out what to do if no medication history exists.
-        # card_data["skipped"]   = all_med_ids
-        # card_data["taken"]     = []
-        # card_data["completed"] = all_med_ids
-        # self.save(card_data)
-        return card_data
+        return self.data
       end
-
-      # Scope the history to the corresponding medication schedule ID.
-      scoped_history = history.data.values.find_all {|hist| hist["medication_schedule_id"] == card_data["object_id"]}
 
       # At this point, we have all the medications and the medication history
       # to see if the person adheres. Let's calculate number of those that were
       # taken and number of those that were skipped.
-      med_ids_completed = scoped_history.map {|v| v["medication_id"]}
-      med_ids_taken     = scoped_history.find_all {|h| h["taken_at"].present?}.map {|v| v["medication_id"]}
-      med_ids_skipped   = scoped_history.find_all {|h| h["skipped_at"].present?}.map {|v| v["medication_id"]}
+      med_ids_completed = []
+      med_ids_taken     = []
+      med_ids_skipped   = []
+      med_ids.each do |med_id|
+        med_ids_completed << med_id
 
-      card_data["skipped"]   = med_ids_skipped
-      card_data["taken"]     = med_ids_taken
-      card_data["completed"] = med_ids_completed
-      self.save(card_data)
-      return card_data
+        if history.data[med_id]["taken_at"].present?
+          med_ids_taken << med_id
+        elsif history.data[med_id]["skipped_at"].present?
+          med_ids_skipped << med_id
+        end
+      end
+
+      # Finally, calculate status
+      if history.data.try(:keys).try(:length).to_i == med_ids.length
+        self.update({status: "completed"})
+      elsif slot.past?
+        self.update({status: "overdue"})
+      else
+        self.update({status: "inprogress"})
+      end
+
+      self.data["skipped"]   = med_ids_skipped
+      self.data["taken"]     = med_ids_taken
+      self.data["completed"] = med_ids_completed
+      self.update(self.data)
+      return self.data
     end
   end
 
