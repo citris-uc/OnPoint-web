@@ -30,11 +30,11 @@ class Cards
     return self.data
   end
 
-  def add(card_hash)
-    return self.firebase.push("patients/#{self.uid}/cards/#{self.date.strftime("%F")}", card_hash)
-  end
+  def create(slot_id, card_hash)
+    raise "slot_id is not present" if slot_id.blank?
 
-  #----------------------------------------------------------------------------
+    return self.firebase.set("patients/#{self.uid}/cards/#{self.date.strftime("%F")}/#{slot_id}", card_hash)
+  end
 
   def destroy
     date = self.date.beginning_of_day
@@ -71,7 +71,7 @@ class Cards
   #----------------------------------------------------------------------------
 
   def generate_from_medication_schedule_if_none
-    if self.data.blank? || self.data.to_a.find {|c| c[1]["object_type"] == "medication_schedule"}.blank?
+    if self.data.blank? || self.data.find {|slot_id, slot_hash| slot_hash["object_type"] == "medication_schedule"}.blank?
       self.generate_from_medication_schedule()
     end
   end
@@ -82,14 +82,11 @@ class Cards
     ms = MedicationSchedule.new(uid)
     ms.get()
 
-    ms.data.to_a.each do |slot|
-      object_id = slot[0]
-      slot_hash = slot[1]
+    ms.data.each do |slot_id, slot_hash|
+      # object_id = slot[0]
+      # slot_hash = slot[1]
 
-      puts "Looking at slot hash = #{slot_hash}"
-
-      # Skip this slot if today's cards already have it.
-      next if self.data && self.data.values.find {|v| v["object_id"] == object_id}
+      next if self.data && self.data[slot_id]
 
       # Skip this slot if today's date doesn't match when it should be displayed.
       week_day = self.date.wday
@@ -102,9 +99,29 @@ class Cards
       # Let's create the card.
       card_hash = {}
       card_hash[:object_type] = "medication_schedule"
-      card_hash[:object_id]   = object_id
+      card_hash[:object_id]   = slot_id
       card_hash[:medication_schedule] = slot_hash
-      self.add(card_hash)
+      self.create(slot_id, card_hash)
+
+
+      # puts "Looking at slot hash = #{slot_hash}"
+      # # Skip this slot if today's cards already have it.
+      # next if self.data && self.data.values.find {|v| v["object_id"] == object_id}
+      #
+      # # Skip this slot if today's date doesn't match when it should be displayed.
+      # week_day = self.date.wday
+      # next unless slot_hash["days"][week_day] == true
+      #
+      # # Do not generate a card if there are no medications.
+      # next if slot_hash["medications"].blank?
+      #
+      # # At this point, there is no card with this slot AND it matches the weekday.
+      # # Let's create the card.
+      # card_hash = {}
+      # card_hash[:object_type] = "medication_schedule"
+      # card_hash[:object_id]   = object_id
+      # card_hash[:medication_schedule] = slot_hash
+      # self.add(card_hash)
     end
   end
 

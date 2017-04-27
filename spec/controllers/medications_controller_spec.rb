@@ -32,15 +32,65 @@ describe API::V0::MedicationsController do
     # DEPRECATION WARNING: env is deprecated and will be removed from Rails 5.1 (called from identify_uid at /opt/OnPoint-web/app/controllers/api/v0/base_controller.rb:3)
     # Completed 200 OK in 757ms (Views: 1.3ms | ActiveRecord: 0.0ms)
     it "records a skip" do
-      put :decide, :medication => medication, :schedule_id => @slot_id, :choice => "skip"
+      put :decide, :params => {:medication => medication, :schedule_id => @slot_id, :choice => "skip"}
       history = MedicationHistory.new(@uid, Time.zone.now, @slot_id)
       history.get()
-      puts "medication: #{medication}"
-      puts "history.data: #{history.data}"
       expect( history.data[medication["$id"]]["skipped_at"] ).not_to eq(nil)
+    end
+
+    it "records a take" do
+      put :decide, :params => {:medication => medication, :schedule_id => @slot_id, :choice => "take"}
+      history = MedicationHistory.new(@uid, Time.zone.now, @slot_id)
+      history.get()
+      expect( history.data[medication["$id"]]["taken_at"] ).not_to eq(nil)
+    end
+
+    it "updates the corresponding card" do
+      put :decide, :params => {:medication => medication, :schedule_id => @slot_id, :choice => "take"}
+      history = MedicationHistory.new(@uid, Time.zone.now, @slot_id)
+
+      slot = Slot.new(@uid, @slot_id)
+      slot.get()
+      expect( slot.data["status"] ).to eq("completed")
     end
   end
 
   #----------------------------------------------------------------------------
+
+  describe "Making a decision for all" do
+    let(:med1) { "-KigJ71D9kJE-kvUutEI" }
+    let(:med2) { "-KigJBv2NeC3FhXwuC8s" }
+    before(:each) do
+      # 2 meds
+      @slot_id       = "-KigJCI5u8VLlWzoMowr"
+    end
+
+    # Started PUT "/api/v0/medications/decide" for 127.0.0.1 at 2017-04-26 15:13:11 -0700
+    # Processing by API::V0::MedicationsController#decide as JSON
+    it "records a skip" do
+      put :decide_all, :params => {:schedule_id => @slot_id, :choice => "skip"}
+      history = MedicationHistory.new(@uid, Time.zone.now, @slot_id)
+      history.get()
+      expect( history.data[med1]["skipped_at"] ).not_to eq(nil)
+      expect( history.data[med2]["skipped_at"] ).not_to eq(nil)
+    end
+
+    it "records a take" do
+      put :decide_all, :params => {:schedule_id => @slot_id, :choice => "take"}
+      history = MedicationHistory.new(@uid, Time.zone.now, @slot_id)
+      history.get()
+      expect( history.data[med1]["taken_at"] ).not_to eq(nil)
+      expect( history.data[med2]["taken_at"] ).not_to eq(nil)
+    end
+
+    it "updates the corresponding card" do
+      put :decide_all, :params => {:medication => medication, :schedule_id => @slot_id, :choice => "skip"}
+      history = MedicationHistory.new(@uid, Time.zone.now, @slot_id)
+
+      slot = Slot.new(@uid, @slot_id)
+      slot.get()
+      expect( slot.data["status"] ).to eq("completed")
+    end
+  end
 
 end

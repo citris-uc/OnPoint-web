@@ -1,8 +1,8 @@
-json.dates @cards do |key, cards|
-  json.date key
-  json.cards cards.data do |card|
-    json.id card[0]
+json.dates @dates do |date, cards|
+  json.date date
+  json.cards cards.data do |card_id, card_hash|
+    json.id card_id
 
-    json.partial! "api/v0/cards/card", :card => card[1]
+    json.partial! "api/v0/cards/card", :card => card_hash
   end
 end

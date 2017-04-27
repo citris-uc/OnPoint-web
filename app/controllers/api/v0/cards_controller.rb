@@ -5,14 +5,16 @@ class API::V0::CardsController < API::V0::BaseController
   # GET /api/v0/cards
   def index
     if params[:upcoming].present?
-      @cards = {}
+      @dates = {}
       [Time.zone.today, Time.zone.tomorrow].to_a.each do |d|
         @end_date_string = d.strftime("%F")
+
         cards = Cards.new(@uid, d)
         cards.get()
+
         cards.generate_from_medication_schedule_if_none()
         cards.get()
-        @cards[@end_date_string] = cards || {}
+        @dates[@end_date_string] = cards || {}
       end
     end
   end

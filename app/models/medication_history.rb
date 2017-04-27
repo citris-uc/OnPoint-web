@@ -26,22 +26,27 @@ class MedicationHistory
   #----------------------------------------------------------------------------
 
   def update(medication_id, data)
+    raise "medication_id is missing" if medication_id.blank?
+
     data.reject! {|k,v| k.include?("$")}
-    response = self.firebase.update("patients/#{self.uid}/medication_histories/#{self.date.strftime('%F')}/#{self.id}/#{medication_id}", data)
+    response = self.firebase.update("patients/#{self.uid}/medication_histories/#{self.date.strftime('%F')}/#{self.slot_id}/#{medication_id}", data)
   end
 
   #----------------------------------------------------------------------------
 
   def create(slot_id, medication_id, data)
-    data[:medication].reject! {|k,v| k.to_s.include?("$")}
+    raise "slot_id is missing" if slot_id.blank?
+    raise "medication_id is missing" if medication_id.blank?
+
+    data.reject! {|k,v| k.to_s.include?("$")}
     return self.firebase.set("patients/#{self.uid}/medication_histories/#{self.date.strftime('%F')}/#{slot_id}/#{medication_id}", data)
   end
 
   #----------------------------------------------------------------------------
 
   def decide(medication, choice)
-    medication_id = medication["$id"]
-    data_hash = {medication: medication.to_h.with_indifferent_access, :taken_at => nil, :skipped_at => nil}
+    medication_id = medication["$id"] || medication["id"]
+    data_hash = medication.merge(:taken_at => nil, :skipped_at => nil).with_indifferent_access
     if choice == "take"
       data_hash["taken_at"] = Time.zone.now
     elsif choice == "skip"
