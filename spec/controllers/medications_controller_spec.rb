@@ -20,10 +20,15 @@ describe API::V0::MedicationsController do
 
   #----------------------------------------------------------------------------
 
+  #----------------------------------------------------------------------------
+
   describe "Making a decision" do
     before(:each) do
-      # 7PM slot... Losartan only.
-      @slot_id       = "-KigJCI86z4zFviWuuTe"
+      ms = MedicationSchedule.new(@uid)
+      ms.get()
+
+
+      @slot_id       = ms.data.find {|k,v| v["medications"].present?}[0]
     end
 
     # Started PUT "/api/v0/medications/decide" for 127.0.0.1 at 2017-04-26 15:13:11 -0700
@@ -49,20 +54,24 @@ describe API::V0::MedicationsController do
       put :decide, :params => {:medication => medication, :schedule_id => @slot_id, :choice => "take"}
       history = MedicationHistory.new(@uid, Time.zone.now, @slot_id)
 
-      slot = Slot.new(@uid, @slot_id)
+      slot = Card.new(@uid, Time.zone.now, @slot_id)
       slot.get()
-      expect( slot.data["status"] ).to eq("completed")
+      expect( slot.data["status"] ).not_to eq(nil)
     end
   end
 
   #----------------------------------------------------------------------------
 
   describe "Making a decision for all" do
-    let(:med1) { "-KigJ71D9kJE-kvUutEI" }
-    let(:med2) { "-KigJBv2NeC3FhXwuC8s" }
     before(:each) do
       # 2 meds
-      @slot_id       = "-KigJCI5u8VLlWzoMowr"
+
+      ms = MedicationSchedule.new(@uid)
+      ms.get()
+
+      slot      = ms.data.find {|k,v| v["medications"].present? && v["medications"].length > 1}
+      @slot_id  = slot[0]
+      @med1, @med2     = slot[1]["medications"].keys
     end
 
     # Started PUT "/api/v0/medications/decide" for 127.0.0.1 at 2017-04-26 15:13:11 -0700
@@ -71,25 +80,25 @@ describe API::V0::MedicationsController do
       put :decide_all, :params => {:schedule_id => @slot_id, :choice => "skip"}
       history = MedicationHistory.new(@uid, Time.zone.now, @slot_id)
       history.get()
-      expect( history.data[med1]["skipped_at"] ).not_to eq(nil)
-      expect( history.data[med2]["skipped_at"] ).not_to eq(nil)
+      expect( history.data[@med1]["skipped_at"] ).not_to eq(nil)
+      expect( history.data[@med2]["skipped_at"] ).not_to eq(nil)
     end
 
     it "records a take" do
       put :decide_all, :params => {:schedule_id => @slot_id, :choice => "take"}
       history = MedicationHistory.new(@uid, Time.zone.now, @slot_id)
       history.get()
-      expect( history.data[med1]["taken_at"] ).not_to eq(nil)
-      expect( history.data[med2]["taken_at"] ).not_to eq(nil)
+      expect( history.data[@med1]["taken_at"] ).not_to eq(nil)
+      expect( history.data[@med2]["taken_at"] ).not_to eq(nil)
     end
 
     it "updates the corresponding card" do
       put :decide_all, :params => {:medication => medication, :schedule_id => @slot_id, :choice => "skip"}
       history = MedicationHistory.new(@uid, Time.zone.now, @slot_id)
 
-      slot = Slot.new(@uid, @slot_id)
+      slot = Card.new(@uid, @slot_id)
       slot.get()
-      expect( slot.data["status"] ).to eq("completed")
+      expect( slot.data["status"] ).not_to eq(nil)
     end
   end
 

@@ -17,9 +17,9 @@ class CardsWorker
         cards = Cards.new(uid, date)
         cards.get()
 
-        cards.data.to_a.each do |card_id, card_data|
-          card = Card.new(uid, date, card_id)
-          card.calculate_completeness(card_data, date)
+        cards.data.to_a.each do |slot_id, card_data|
+          card = Card.new(uid, date, slot_id)
+          card.calculate_status()
         end
       end
     end
