@@ -60,19 +60,41 @@ class MedicationHistory
       self.update(medication_id, data_hash)
     end
 
+    # Load the data.
+    self.get()
+
     # Update the corresponding slot.
     slot = Slot.new(self.uid, self.slot_id)
     slot.get()
-    num_meds = slot.data["medications"].length
-    self.get()
+    return nil if slot.data.blank?
 
-    if self.data.try(:keys).try(:length).to_i == num_meds
-      slot.update({status: "completed"})
+    # Fetch the card associated with this medication schedule.
+    card = Card.new(self.uid, self.date, self.slot_id)
+    card.get()
+
+    # Update the status.
+    if self.data.try(:keys).try(:length).to_i == slot.data["medications"].length
+      card.update({status: "completed"})
     elsif slot.past?
-      slot.update({status: "overdue"})
+      card.update({status: "overdue"})
     else
-      slot.update({status: "inprogress"})
+      card.update({status: "inprogress"})
     end
+
+    # Update skipped, completed, etc.
+    card.data["taken_medications"]   ||= []
+    card.data["skipped_medications"] ||= []
+
+    med_name = medication["nickname"] || medication["name"]
+    if choice == "take"
+      card.data["skipped_medications"].delete(med_name)
+      card.data["taken_medications"] << med_name unless card.data["taken_medications"].include?(med_name)
+    elsif choice == "skip"
+      card.data["taken_medications"].delete(med_name)
+      card.data["skipped_medications"] << med_name unless card.data["skipped_medications"].include?(med_name)
+    end
+
+    card.update(card.data)
   end
 
   #----------------------------------------------------------------------------
