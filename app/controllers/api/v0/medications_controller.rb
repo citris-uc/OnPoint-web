@@ -13,7 +13,11 @@ class API::V0::MedicationsController < API::V0::BaseController
       raise API::V0::Error.new("You didn't specify a medication. Please try again", 403) and return
     end
 
-    history = MedicationHistory.new(@uid, Time.zone.now, permitted_params["schedule_id"])
+    if params["date"].blank?
+      raise API::V0::Error.new("You didn't specify a date. Please try again", 403) and return
+    end
+
+    history = MedicationHistory.new(@uid, Time.zone.parse(params["date"]), permitted_params["schedule_id"])
     history.decide(permitted_params["medication"], permitted_params["choice"])
     if history
       render :json => {}, :status => :ok and return
@@ -28,7 +32,11 @@ class API::V0::MedicationsController < API::V0::BaseController
       raise API::V0::Error.new("You didn't specify a schedule ID. Please try again.", 403) and return
     end
 
-    history = MedicationHistory.new(@uid, Time.zone.now, permitted_params["schedule_id"])
+    if params["date"].blank?
+      raise API::V0::Error.new("You didn't specify a date. Please try again", 403) and return
+    end
+
+    history = MedicationHistory.new(@uid, Time.zone.parse(params["date"]), permitted_params["schedule_id"])
     history.decide_all(permitted_params["choice"])
     if history
       render :json => {}, :status => :ok and return

@@ -48,9 +48,9 @@ class MedicationHistory
     medication_id = medication["$id"] || medication["id"]
     data_hash = medication.merge(:taken_at => nil, :skipped_at => nil).with_indifferent_access
     if choice == "take"
-      data_hash["taken_at"] = Time.zone.now
+      data_hash["taken_at"] = self.date
     elsif choice == "skip"
-      data_hash["skipped_at"] = Time.zone.now
+      data_hash["skipped_at"] = self.date
     end
 
     # Update the history.
