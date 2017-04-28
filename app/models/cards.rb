@@ -36,6 +36,11 @@ class Cards
     return self.firebase.set("patients/#{self.uid}/cards/#{self.date.strftime("%F")}/#{slot_id}", card_hash)
   end
 
+  def create_or_update(slot_id, card_hash)
+    raise "slot_id is not present" if slot_id.blank?
+    return self.firebase.set("patients/#{self.uid}/cards/#{self.date.strftime("%F")}/#{slot_id}", card_hash)
+  end
+
   def destroy
     date = self.date.beginning_of_day
     [date, date + 1.day, date + 2.days, date + 3.days].each do |d|

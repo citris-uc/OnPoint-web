@@ -13,7 +13,11 @@ class API::V0::CardsController < API::V0::BaseController
         cards.get()
 
         cards.generate_from_medication_schedule_if_none()
+        m = Measurement.new(@uid)
+        m.generate_card()
+
         cards.get()
+
         @dates[@end_date_string] = cards || {}
       end
     end
