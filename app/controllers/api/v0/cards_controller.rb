@@ -24,12 +24,12 @@ class API::V0::CardsController < API::V0::BaseController
   def history
     end_date = Time.zone.parse(params[:end_date])
 
-    @cards = {}
+    @dates = {}
     (1..3).to_a.each do |d|
       @end_date_string = (end_date - d.days).strftime("%F")
       cards = Cards.new(@uid, end_date - d.days)
       cards.get()
-      @cards[@end_date_string] = cards || {}
+      @dates[@end_date_string] = cards || {}
     end
   end
 

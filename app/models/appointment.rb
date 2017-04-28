@@ -1,43 +1,59 @@
-class Appointment < ActiveRecord::Base
-end
+class Appointment
+  def initialize(uid)
+    @uid  = uid
+    self.class.send(:attr_accessor, "uid")
 
-# /*
-#  * @param date is in ISO format
-#  */
-# createAppointmentCards: function(date, object_type) {
-#   var that = this;
-#   var now  = (new Date()).toISOString();
-#   var date_key = date.substring(0,10);
-#
-#   var d = new Date(date); //date in JS Date format
-#   var toDate = new Date(date);
-#   toDate.setDate(d.getDate()+CARD.TIMESPAN.DAYS_BEFORE_APPT);
-#   var ref = Appointment.getAppointmentsFromToRef(d, toDate);
-#   //var ref = Appointment.ref();
-#   ref.once("value", function(snap) {
-#     snap.forEach(function(childSnap) { //for each date
-#       childSnap.forEach(function(apptSnap) {
-#         var appt = apptSnap.val();
-#         var show = new Date(date);
-#
-#         //TODO: When should the reminder cards show up?
-#         show.setHours(CARD.REMINDER_TIME.HOUR);
-#         show.setMinutes(CARD.REMINDER_TIME.MINUTE);
-#
-#         var card = {
-#           type: CARD.TYPE.REMINDER,
-#           created_at: now,
-#           updated_at: now,
-#           shown_at: show.toISOString(),
-#           completed_at: null,
-#           archived_at: null,
-#           num_comments: 0,
-#           object_type: object_type,
-#           object_id: apptSnap.key()
-#         }
-#         that.create(date_key, card);
-#       })
-#     })
-#   });
-#
-# },
+    @firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
+    self.class.send(:attr_accessor, "firebase")
+
+    return self
+  end
+
+  def schedule
+    self.schedule = self.firebase.get("patients/#{self.uid}/appointment_schedule").body
+    return self.schedule
+  end
+
+  def generate_from_schedule_if_none
+    if self.schedule.blank?
+      self.generate_from_schedule()
+    end
+  end
+
+  def generate_from_schedule
+    self.schedule()
+
+    # (0..6).to_a.each do |wday|
+    #   next unless self.schedule["days"][wday] == true
+    #
+    #   # At this point, there is no card with this slot AND it matches the weekday.
+    #   # Let's create the card.
+    #   card_hash               = {}
+    #   card_hash[:object_type] = "appointment_schedule"
+    #   card_hash[:appointment_schedule] = self.schedule
+    #   Cards.create("appointment", card_hash)
+
+
+    # puts "Looking at slot hash = #{slot_hash}"
+    # # Skip this slot if today's cards already have it.
+    # next if self.data && self.data.values.find {|v| v["object_id"] == object_id}
+    #
+    # # Skip this slot if today's date doesn't match when it should be displayed.
+    # week_day = self.date.wday
+    # next unless slot_hash["days"][week_day] == true
+    #
+    # # Do not generate a card if there are no medications.
+    # next if slot_hash["medications"].blank?
+    #
+    # # At this point, there is no card with this slot AND it matches the weekday.
+    # # Let's create the card.
+    # card_hash = {}
+    # card_hash[:object_type] = "medication_schedule"
+    # card_hash[:object_id]   = object_id
+    # card_hash[:medication_schedule] = slot_hash
+    # self.add(card_hash)
+    end
+  end
+
+
+end
