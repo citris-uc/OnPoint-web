@@ -16,7 +16,7 @@ class Measurement
     return self.schedule
   end
 
-  def generate_card
+  def generate_card(date = Time.zone.now)
     self.get()
     return if self.schedule.blank?
 
@@ -29,7 +29,7 @@ class Measurement
       card_hash[:object_type] = "measurement_schedule"
       card_hash[:measurement_schedule] = self.schedule
 
-      cards = Cards.new(self.uid, Time.zone.now)
+      cards = Cards.new(self.uid, date)
       cards.create_or_update("measurement", card_hash)
     end
   end
