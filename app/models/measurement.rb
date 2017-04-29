@@ -23,14 +23,8 @@ class Measurement
     (0..6).to_a.each do |wday|
       next unless self.schedule["days"][wday] == true
 
-      # At this point, there is no card with this slot AND it matches the weekday.
-      # Let's create the card.
-      card_hash               = {}
-      card_hash[:object_type] = "measurement_schedule"
-      card_hash[:measurement_schedule] = self.schedule
-
-      cards = Cards.new(self.uid, date)
-      cards.create_or_update("measurement", card_hash)
+      card = Card.new(self.uid, date, "measurement")
+      card.create({:object_type => "measurement_schedule", :measurement_schedule => self.schedule})
     end
   end
 end

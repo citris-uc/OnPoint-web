@@ -27,8 +27,8 @@ class Appointment
       appt_id = appt_hash.keys[0]
 
       card_hash = {:object_type => "appointment_reminder", :object_id => appt_id, :appointment => appt_hash[appt_id]}
-      cards = Cards.new(self.uid, date)
-      cards.create_or_update(appt_id, card_hash)
+      card = Card.new(self.uid, date, appt_id)
+      card.create(card_hash)
     end
   end
 

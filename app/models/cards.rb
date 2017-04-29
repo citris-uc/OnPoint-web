@@ -36,23 +36,12 @@ class Cards
     return self.firebase.set("patients/#{self.uid}/cards/#{self.date.strftime("%F")}/#{slot_id}", card_hash)
   end
 
-  def create_or_update(slot_id, card_hash)
-    raise "slot_id is not present" if slot_id.blank?
-    return self.firebase.set("patients/#{self.uid}/cards/#{self.date.strftime("%F")}/#{slot_id}", card_hash)
-  end
-
   def destroy
     date = self.date.beginning_of_day
     [date, date + 1.day, date + 2.days, date + 3.days].each do |d|
       self.firebase.delete("patients/#{self.uid}/cards/#{d.strftime("%F")}")
     end
   end
-
-
-  # def self.find_by_uid_and_date(uid, date_string)
-  #   firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
-  #   return firebase.get("patients/#{uid}/cards/#{date_string}").body
-  # end
 
   #----------------------------------------------------------------------------
 
@@ -112,5 +101,4 @@ class Cards
   # end
 
   #----------------------------------------------------------------------------
-
 end
