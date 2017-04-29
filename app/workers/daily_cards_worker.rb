@@ -5,15 +5,10 @@ class DailyCardsWorker
   sidekiq_options :retry => true, :backtrace => true
 
   def perform
-    patients = Patient.all
-    patients.each do |uid, data|
-      cards = Cards.new(uid, Time.zone.today)
-      cards.get()
-      cards.generate_from_medication_schedule_if_none()
-
-      cards = Cards.new(uid, Time.zone.tomorrow)
-      cards.get()
-      cards.generate_from_medication_schedule_if_none()
+    Patient.all.each do |uid, data|
+      patient = Patient.new(uid)
+      patient.generate_cards_for_date(Time.zone.today)
+      patient.generate_cards_for_date(Time.zone.tomorrow)
     end
   end
 end
