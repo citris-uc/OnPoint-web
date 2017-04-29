@@ -48,25 +48,6 @@ class Cards
     end
   end
 
-  #----------------------------------------------------------------------------
-
-  def appointment_cards_between(start_date, end_date)
-    date = start_date
-
-    appt_cards = []
-    while (date < end_date.end_of_day)
-      cards = Cards.new(self.uid, date)
-      cards.get()
-
-      if cards.data
-        appt_cards += cards.data.to_a.find_all {|c| c[1]["object_type"] == "appointment"}
-      end
-
-      date  += 1.day
-    end
-
-    return appt_cards
-  end
 
   # def self.find_by_uid_and_date(uid, date_string)
   #   firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])

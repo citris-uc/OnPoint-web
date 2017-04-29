@@ -35,16 +35,16 @@ class API::V0::CardsController < API::V0::BaseController
   # This OVERWRITES any existing schedule. Why? Because it's currently only
   # called from when creating/editing medication schedule.
   def force
-    cards = Cards.new(@uid, Time.zone.today)
-    cards.destroy()
-    cards = Cards.new(@uid, Time.zone.tomorrow)
-    cards.destroy()
+    cards = Card.new(@uid, Time.zone.today)
+    cards.destroy_all
+    cards = Card.new(@uid, Time.zone.tomorrow)
+    cards.destroy_all
 
-    cards = Cards.new(@uid, Time.zone.today)
-    cards.generate_from_medication_schedule()
-
-    cards = Cards.new(@uid, Time.zone.tomorrow)
-    cards.generate_from_medication_schedule()
+    # cards = Cards.new(@uid, Time.zone.today)
+    # cards.generate_from_medication_schedule()
+    #
+    # cards = Cards.new(@uid, Time.zone.tomorrow)
+    # cards.generate_from_medication_schedule()
   end
 
 
@@ -75,13 +75,10 @@ class API::V0::CardsController < API::V0::BaseController
 
   def destroy_appointment
     date = Time.zone.parse(params[:appointment_date])
-    cards = Cards.new(@uid, date)
-    cards.get()
-    matching_appt_card = cards.data.find {|cid, cdata| cdata["object_id"] == params[:firebase_id]}
-    if matching_appt_card.present?
-      card = Card.new(@uid, date, matching_appt_card[0])
-      card.destroy()
-    end
+
+    card = Card.new(@uid, date, params[:appointment_id])
+    card.get()
+    c.destroy if card.data.present?
     render :json => {}, :status => :ok and return
   end
 

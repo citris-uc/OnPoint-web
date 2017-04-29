@@ -1,5 +1,5 @@
 class Card
-  def initialize(uid, date, id)
+  def initialize(uid, date, id = nil)
     @uid  = uid
     @date = date
     @id  = id
@@ -15,6 +15,16 @@ class Card
   end
 
   #----------------------------------------------------------------------------
+
+  def self.get_all
+    return self.firebase.get("patients/#{self.uid}/cards/#{self.date.strftime("%F")}").body
+  end
+  #
+  def create(data)
+    raise "Card#id is not present" if self.id.blank?
+    return self.firebase.set("patients/#{self.uid}/cards/#{self.date.strftime("%F")}/#{self.id}", data)
+  end
+
 
   # Return {
   # "-KeGUkxsE2zevz6JA2VC" => {
@@ -40,6 +50,9 @@ class Card
     self.firebase.delete("patients/#{self.uid}/cards/#{self.date.strftime("%F")}/#{self.id}")
   end
 
+  def destroy_all
+    self.firebase.delete("patients/#{self.uid}/cards/#{self.date.strftime("%F")}")
+  end
 
   def calculate_status
     self.get()
@@ -108,5 +121,6 @@ class Card
       return self.data
     end
   end
+
 
 end
