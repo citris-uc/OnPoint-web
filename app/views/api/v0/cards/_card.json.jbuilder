@@ -29,6 +29,6 @@ if card["object_type"] == "medication_schedule"
   json.completed card["completed"]
 
 
-elsif !card["object_type"] == "measurement_schedule"
+elsif !(card["object_type"] == "measurement_schedule")
   json.appointment card["appointment"]
 end
