@@ -23,7 +23,7 @@ class API::V0::CardsController < API::V0::BaseController
     @dates = {}
     (1..3).to_a.each do |d|
       @end_date_string = (end_date - d.days).strftime("%F")
-      cards = Cards.new(@uid, end_date - d.days)
+      cards = Card.new(@uid, end_date - d.days)
       cards.get()
       @dates[@end_date_string] = cards || {}
     end
@@ -39,12 +39,6 @@ class API::V0::CardsController < API::V0::BaseController
     cards.destroy_all
     cards = Card.new(@uid, Time.zone.tomorrow)
     cards.destroy_all
-
-    # cards = Cards.new(@uid, Time.zone.today)
-    # cards.generate_from_medication_schedule()
-    #
-    # cards = Cards.new(@uid, Time.zone.tomorrow)
-    # cards.generate_from_medication_schedule()
   end
 
 
