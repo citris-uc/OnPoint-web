@@ -15,6 +15,12 @@ class MedicationSchedule
     return self.data
   end
 
+  def self.save(uid, data)
+    firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
+    return firebase.push("patients/#{uid}/medication_schedule/", data)
+  end
+
+
   def self.default_schedule
     schedule = [
       {
