@@ -20,6 +20,9 @@ class Patient
 
     appt = Appointment.new(self.uid)
     appt.generate_card(d)
+
+    quiz = Questionnaire.new(self.uid)
+    quiz.generate_card(d)
   end
 
   #----------------------------------------------------------------------------
