@@ -37,43 +37,41 @@ class MedicationSchedule
     return schedule
   end
 
-  # uid = 1dae2ad5-9d3c-407c-9d8e-6f3796f0a2ec
-  def self.find_by_uid(uid)
-    firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
-    return firebase.get("patients/#{uid}/medication_schedule").body
-  end
-
-  def self.update(uid, schedule_id, data)
-    firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
-    path = "patients/#{uid}/medication_schedule/#{schedule_id}/"
-    response = firebase.update(path, data)
-    return response
-  end
-
-  def self.save(uid, data)
-    firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
-    path = "patients/#{uid}/medication_schedule/"
-    return firebase.push(path, data)
-  end
-
-  # $scope.findMedicationScheduleForCard = function(card) {
-  def self.find_by_card(uid, card)
-    schedules = self.find_by_uid(uid)
-    return schedules[card["object_id"]]
-  end
-
-
-  def update(id, data)
-    puts "Updating id = #{id} with data = #{data}"
-
-    response = self.firebase.update("patients/#{self.uid}/medication_schedule/#{id}/", data)
-    return response
-  end
+  #----------------------------------------------------------------------------
 
   def self.generate_default_schedule(uid)
     self.default_schedule.each do |slot|
       MedicationSchedule.save(uid, slot.merge("medications" => []))
     end
   end
+
+  #----------------------------------------------------------------------------
+
+  def generate_card(date = Time.zone.now)
+    self.get()
+
+    c = Card.new(self.uid, date)
+    cards = c.get_all()
+
+    self.data.each do |med_schedule_id, med_schedule_data|
+      # Skip if this med_schedule_id is there already.
+      next if cards && cards[med_schedule_id].present?
+
+      # Do not generate a card if there are no medications.
+      next if med_schedule_data["medications"].blank?
+
+      # Skip this slot if today's date doesn't match when it should be displayed.
+      next unless med_schedule_data["days"][date.wday] == true
+
+      # At this point, there is no card with this slot AND it matches the weekday.
+      # Let's create the card.
+      card_hash = {:object_id => med_schedule_id, :object_type => "medication_schedule", :medication_schedule => med_schedule_data}
+      c = Card.new(self.uid, date, med_schedule_id)
+      c.create(card_hash)
+    end
+  end
+
+  #----------------------------------------------------------------------------
+
 
 end
