@@ -11,18 +11,36 @@ class Patient
 
   #----------------------------------------------------------------------------
 
+  def appointments
+    return self.firebase.get("patients/#{self.uid}/appointments").body
+  end
+
+  def appointments_for_date(date)
+    return self.firebase.get("patients/#{self.uid}/appointments/#{date.strftime("%F")}").body
+  end
+
+  def cards
+    return self.firebase.get("patients/#{self.uid}/cards").body
+  end
+
+  def cards_for_date(date)
+    return self.firebase.get("patients/#{self.uid}/cards/#{date.strftime("%F")}").body
+  end
+
+  #----------------------------------------------------------------------------
+
   def generate_cards_for_date(date = Time.zone.now)
     ms = MedicationSchedule.new(self.uid)
-    ms.generate_card(d)
+    ms.generate_card(date)
 
-    m = Measurement.new(self.uid)
+    m = MeasurementSchedule.new(self.uid)
     m.generate_card(date)
 
     appt = Appointment.new(self.uid)
-    appt.generate_card(d)
+    appt.generate_cards(date)
 
-    quiz = Questionnaire.new(self.uid)
-    quiz.generate_card(d)
+    quiz = QuestionnaireSchedule.new(self.uid)
+    quiz.generate_card(date)
   end
 
   #----------------------------------------------------------------------------

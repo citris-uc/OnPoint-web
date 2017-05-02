@@ -56,8 +56,8 @@ class MedicationSchedule
   def generate_card(date = Time.zone.now)
     self.get()
 
-    c = Card.new(self.uid, date)
-    cards = c.get_all()
+    p     = Patient.new(self.uid)
+    cards = p.cards_for_date(date)
 
     self.data.each do |med_schedule_id, med_schedule_data|
       # Skip if this med_schedule_id is there already.

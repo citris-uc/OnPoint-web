@@ -16,10 +16,6 @@ class Card
 
   #----------------------------------------------------------------------------
 
-  def self.get_all
-    return self.firebase.get("patients/#{self.uid}/cards/#{self.date.strftime("%F")}").body
-  end
-  #
   def create(data)
     raise "Card#id is not present" if self.id.blank?
     return self.firebase.set("patients/#{self.uid}/cards/#{self.date.strftime("%F")}/#{self.id}", data)

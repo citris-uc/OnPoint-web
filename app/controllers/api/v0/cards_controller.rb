@@ -3,13 +3,14 @@ class API::V0::CardsController < API::V0::BaseController
 
   #----------------------------------------------------------------------------
   # GET /api/v0/cards
+
   def index
     @patient = Patient.new(@uid)
 
     @dates = {}
     [Time.zone.today, Time.zone.tomorrow].to_a.each do |date|
       @patient.generate_cards_for_date(date)
-      cards = Card.new(self.uid, date)
+      cards = Card.new(@uid, date)
       cards.get()
       @dates[date.strftime("%F")] = cards || {}
     end
