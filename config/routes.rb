@@ -15,7 +15,7 @@ Rails.application.routes.draw do
 
       resources :cards, :only => [:index] do
         get   :history, :on => :collection
-        delete :force, :on => :collection
+        delete :upcoming, :on => :collection, :action => :destroy_upcoming
         put    :appointment, :on => :collection
         delete :destroy_appointment, :on => :collection
       end
