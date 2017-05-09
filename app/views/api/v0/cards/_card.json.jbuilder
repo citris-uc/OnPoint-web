@@ -30,6 +30,8 @@ if card["object_type"] == "medication_schedule"
 
 elsif card["object_type"] == "measurement_reminder"
   json.measurement_reminder card["measurement_reminder"]
+elsif card["object_type"] == "questionnaire_reminder"
+  json.questionnaire_schedule card["questionnaire_schedule"]
 else
   json.appointment card["appointment"]
 end

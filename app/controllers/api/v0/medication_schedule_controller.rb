@@ -52,7 +52,8 @@ class API::V0::MedicationScheduleController < API::V0::BaseController
         puts "Just removed med_id = #{med_id} from hash[medications] = #{hash["medications"]}"
 
         hash["medications"] = new_medications.to_h
-        @schedule.update(schedule_id, hash)
+        slot = Slot.new(@uid, schedule_id)
+        slot.update(hash)
       end
     end
 

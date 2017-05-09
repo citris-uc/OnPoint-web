@@ -59,21 +59,24 @@ class MedicationSchedule
     p     = Patient.new(self.uid)
     cards = p.cards_for_date(date)
 
-    self.data.each do |med_schedule_id, med_schedule_data|
-      # Skip if this med_schedule_id is there already.
-      next if cards && cards[med_schedule_id].present?
+    if self.data
+      self.data.each do |med_schedule_id, med_schedule_data|
+        # Skip if this med_schedule_id is there already.
+        next if cards && cards[med_schedule_id].present?
 
-      # Do not generate a card if there are no medications.
-      next if med_schedule_data["medications"].blank?
+        # Do not generate a card if there are no medications.
+        next if med_schedule_data["medications"].blank?
 
-      # Skip this slot if today's date doesn't match when it should be displayed.
-      next unless med_schedule_data["days"][date.wday] == true
+        # Skip this slot if today's date doesn't match when it should be displayed.
+        next unless med_schedule_data["days"][date.wday] == true
 
-      # At this point, there is no card with this slot AND it matches the weekday.
-      # Let's create the card.
-      card_hash = {:object_id => med_schedule_id, :object_type => "medication_schedule", :medication_schedule => med_schedule_data}
-      c = Card.new(self.uid, date, med_schedule_id)
-      c.create(card_hash)
+        # At this point, there is no card with this slot AND it matches the weekday.
+        # Let's create the card.
+        card_hash = {:object_id => med_schedule_id, :object_type => "medication_schedule", :medication_schedule => med_schedule_data}
+        c = Card.new(self.uid, date, med_schedule_id)
+        c.create(card_hash)
+      end
+
     end
   end
 

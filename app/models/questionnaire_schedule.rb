@@ -23,7 +23,7 @@ class QuestionnaireSchedule
       next unless self.schedule["days"][wday] == true
 
       card = Card.new(self.uid, date, "questionnaire")
-      card.create({:object_type => "questionnaire_reminder"})
+      card.create({:object_type => "questionnaire_reminder", "questionnaire_schedule" => self.schedule})
     end
   end
 end

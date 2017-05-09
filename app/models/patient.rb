@@ -30,6 +30,8 @@ class Patient
   #----------------------------------------------------------------------------
 
   def generate_cards_for_date(date = Time.zone.now)
+    
+
     ms = MedicationSchedule.new(self.uid)
     ms.generate_card(date)
 
