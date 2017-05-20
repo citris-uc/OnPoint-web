@@ -20,6 +20,7 @@ class API::V0::CardsController < API::V0::BaseController
   # GET /api/v0/cards/history
 
   def history
+    params[:end_date] ||= Time.zone.yesterday.strftime("%F")
     end_date = Time.zone.parse(params[:end_date])
 
     @dates = {}
