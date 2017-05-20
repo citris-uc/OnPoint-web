@@ -21,9 +21,6 @@ class API::V0::CardsController < API::V0::BaseController
 
   def history
     end_date = Time.zone.parse(params[:end_date])
-    if end_date.blank?
-      end_date = Time.zone.yesterday
-    end
 
     @dates = {}
     (1..3).to_a.each do |d|
@@ -31,6 +28,9 @@ class API::V0::CardsController < API::V0::BaseController
       cards = Card.new(@uid, date)
       cards.get()
       @dates[date.strftime("%F")] = cards || {}
+
+      # The last date.
+      @end_date_string = date
     end
   end
 
