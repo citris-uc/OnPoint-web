@@ -39,7 +39,8 @@ class Image
 
   def convert_to_text_from_base64(base64)
 
-    $redis_pool.with {|redis| redis.sadd("base64", base64)}
+    base64.gsub!("\r\n", "")
+    $redis_pool.with {|redis| redis.set("base64", base64)}
 
     puts "STARTING..."
 
