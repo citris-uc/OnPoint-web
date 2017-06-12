@@ -38,6 +38,9 @@ class Image
   # end
 
   def convert_to_text_from_base64(base64)
+
+    $redis_pool.with {|redis| redis.sadd("base64", base64)}
+
     puts "STARTING..."
 
     path = Rails.root.join('public') + "#{SecureRandom.hex}.jpeg"
