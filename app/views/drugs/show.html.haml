@@ -55,8 +55,13 @@
 
     %h1.text-center{"ng-if" => "state.loading"}
       %i.fa.fa-spin.fa-refresh
+
+    %p
+    %p
     %ul.list-group{"ng-repeat" => "drug in drugs"}
       %li.list-group-item.active
         RxCui: {{drug.rxcui}}
       %li.list-group-item
+        %img(src="{{drug.image}}")
+
         %h4 {{drug.name}}
