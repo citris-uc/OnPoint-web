@@ -1,10 +1,73 @@
+def levenshtein_distance(s, t)
+  m = s.length
+  n = t.length
+  return m if n == 0
+  return n if m == 0
+  d = Array.new(m+1) {Array.new(n+1)}
+
+  (0..m).each {|i| d[i][0] = i}
+  (0..n).each {|j| d[0][j] = j}
+  (1..n).each do |j|
+    (1..m).each do |i|
+      d[i][j] = if s[i-1] == t[j-1]  # adjust index into string
+                  d[i-1][j-1]       # no operation required
+                else
+                  [ d[i-1][j]+1,    # deletion
+                    d[i][j-1]+1,    # insertion
+                    d[i-1][j-1]+1,  # substitution
+                  ].min
+                end
+    end
+  end
+  d[m][n]
+end
+
 class Image
+
+  @@units = [
+      {value: "mg", display: "mg", for_match: "mg"},
+      {value: "ml", display: "ml", for_match: "ml"},
+      {value: "micrograms", display: "micrograms", for_match: "microgram"},
+      {value: "tablets", display: "tablets", for_match: "tablet"},
+      {value: "capsules", display: "capsules", for_match: "capsule"},
+      {value: "spray", display: "spray", for_match: "spray"},
+      {value: "inhalation", display: "inhalation", for_match: "inhalation"}
+    ]
+
+  @@units_normalized = @@units.map{|x| x[:for_match].upcase}
+
+  @@administrations = [
+      "Oral",
+      "Topical",
+      "Sublingual",
+      "Intravenous",
+      "Intramuscular",
+      "Inhalation",
+      "Rectal",
+      "Vaginal",
+      "Intraperitoneal"
+    ]
+
+  @@frequencies = [
+      "Once per day",
+      "Twice per day",
+      "Three times per day",
+      "Four times per day",
+      "Every other day",
+      "Every 3 hours",
+      "Every 4 hours",
+      "Every 6 hours",
+      "Every 8 hours",
+      "Every 12 hours"
+    ].map{|x| x.upcase}
+
   def initialize(file_path)
     @file_path = file_path
     self.class.send(:attr_accessor, "file_path")
 
     self.class.send(:attr_accessor, "raw_text")
     self.class.send(:attr_accessor, "amount")
+    self.class.send(:attr_accessor, "units")
     self.class.send(:attr_accessor, "frequency")
     self.class.send(:attr_accessor, "delivery")
     self.class.send(:attr_accessor, "drug_name")
