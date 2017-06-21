@@ -46,6 +46,36 @@ class Drug
     return candidates.find_all {|c| c["rank"] == "1"}.uniq {|c| c["rxcui"]}.map {|res| res["rxcui"]}.uniq
   end
 
+  def self.find_images_by_name(name)
+    orig_req = self.get("https://rximage.nlm.nih.gov/api/rximage/1/rxnav?name=#{name}&resolution=120")
+    req      = orig_req["nlmRxImages"]
+
+    pill_images = []
+    req.each do |img|
+      pill_images << img["imageUrl"]
+    end
+
+    return pill_images
+  end
+
+
+  #Image retrieval process
+  #First try to retrieve images using the query string
+  #If that fails to retrieve an image try the first word of the name of the first scd match
+  #We do at most 2 queries.
+  def self.find_image_for_drugs(drugs, query_name)
+    rximages_for_name = Drug.find_images_by_name(query_name)
+    if rximages_for_name.present?
+      drugs.map {|d| d[:image] = rximages_for_name[0]}
+      return drugs
+    end
+
+    query_name = drugs[0]["name"].split.first
+    rximages_for_name = Drug.find_images_by_name(query_name)
+    drugs.map {|d| d[:image] = rximages_for_name[0]} if rximages_for_name.present?
+    return drugs
+  end
+
   # See https://rxnav.nlm.nih.gov/RxNormAPIs.html#uLink=RxNorm_REST_getRelatedByType
   # The related term types endpoint will help us get the branded drug information
   # from search results that match on precise ingredient or a clinical drug component.
@@ -57,16 +87,6 @@ class Drug
   def find_scd_matches
     orig_req = self.class.get("https://rxnav.nlm.nih.gov/REST/rxcui/#{@rxcui}/related.json?tty=SCD", {})
     return orig_req["relatedGroup"]["conceptGroup"][0]["conceptProperties"]
-  end
-
-  def get_pill_images_via_rximage
-    # TODO: Consider using https://pillbox.nlm.nih.gov/PHP/pillboxAPIService.php?rxcui=103968&key=NQR5VKD92P
-    orig_req = self.class.get("https://rximage.nlm.nih.gov/api/rximage/1/rxnav?rxcui=#{@rxcui}&resolution=120")
-    req = orig_req["nlmRxImages"]
-    req.each do |img|
-      self.pill_images << img["imageUrl"]
-    end
-    return orig_req
   end
 
   def name

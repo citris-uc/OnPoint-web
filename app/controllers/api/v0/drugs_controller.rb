@@ -4,11 +4,14 @@ class API::V0::DrugsController < API::V0::BaseController
   def show
     drugs = []
 
-    rxcuis = Drug.find_rxcuis_by_name(params[:query].downcase.strip)
+    query_name = params[:query].downcase.strip
+    rxcuis = Drug.find_rxcuis_by_name(query_name)
+
     if rxcuis.present?
       d = Drug.new(rxcuis[0])
       d.scd = d.find_scd_matches()
       drugs = d.scd
+      Drug.find_image_for_drugs(drugs, query_name)
     end
 
     render :json => drugs, :status => :ok and return
