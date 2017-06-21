@@ -177,16 +177,21 @@ class Image
       freq_regex_match = @@frequencies[closest_match_index]
     end
 
-    self.frequency = freq_regex_match
+    # Capitalize it since we initialize UPPERCASE @@frequencies.
+    self.frequency = freq_regex_match.capitalize if freq_regex_match.present?
   end
 
   def extract_amount_and_units
-    units_regex = /(?<amount>(((\d)-(\d))|((\d)+))) (?<unit>(#{@@units_normalized.join('|')})(S){0,1})/
+    units_regex = /(?<amount>(((\d)-(\d))|((\d)+))) ((?<unit>(#{@@units_normalized.join('|')}))(S){0,1})/
 
     list_match = get_from_regex(units_regex, true)
 
     self.amount = list_match[:amount]
-    self.units = list_match[:unit]
+
+    if list_match[:unit].present?
+      match = @@units.find {|u| u[:for_match].downcase == list_match[:unit].downcase.strip}
+      self.units = match[:value] if match.present?
+    end
   end
 
   def extract_delivery
@@ -225,6 +230,8 @@ class Image
 
   private
 
+  #----------------------------------------------------------------------------
+
   def get_from_regex(r1, match_list=false)
 
     raw_text_normalized = self.raw_text.upcase
@@ -243,6 +250,7 @@ class Image
     end
   end
 
+  #----------------------------------------------------------------------------
 
   def find_drug_name_match(str1)
     for drug_name in $drug_list
