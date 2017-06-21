@@ -147,20 +147,54 @@ class Image
   def parse
     self.extract_drug_name
     self.extract_frequency
-    self.extract_amount
+    self.extract_amount_and_units
     self.extract_delivery
   end
 
   def extract_frequency
-    self.frequency = get_from_regex(/(EVERY (((\d)+ (\w)+)|((\w)+)))|((\w)+ DAILY)|(AT (\w)+)/)
+    freq_regex_match = get_from_regex(/(EVERY (((\d)+ (\w)+)|((\w)+)))|((\w)+ DAILY)|(AT (\w)+)/)
+
+    if not freq_regex_match.nil?
+      freq_regex_match = freq_regex_match.gsub("DAILY", "PER DAY")
+      freq_regex_match = freq_regex_match.gsub("NIGHT", "DAY")
+      freq_regex_match = freq_regex_match.gsub("EVERY DAY", "ONCE PER DAY")
+      freq_regex_match = freq_regex_match.gsub("AT BEDTIME", "ONCE PER DAY")
+
+      closest_match_index = nil
+      closest_match_amt = 0
+
+      @@frequencies.each_with_index do |freq, freq_index|
+        match_amt = levenshtein_distance(freq, freq_regex_match)
+
+        if match_amt < closest_match_amt or closest_match_index.nil?
+          closest_match_index = freq_index
+          closest_match_amt = match_amt
+
+          if closest_match_amt == 0 then break end
+        end
+      end
+
+      freq_regex_match = @@frequencies[closest_match_index]
+    end
+
+    self.frequency = freq_regex_match
   end
 
-  def extract_amount
-    self.amount = get_from_regex(/(((\d)-(\d))|((\d)+)) (TABLET|CAPSULE)(S){0,1}/)
+  def extract_amount_and_units
+    units_regex = /(?<amount>(((\d)-(\d))|((\d)+))) (?<unit>(#{@@units_normalized.join('|')})(S){0,1})/
+
+    list_match = get_from_regex(units_regex, true)
+
+    self.amount = list_match[:amount]
+    self.units = list_match[:unit]
   end
 
   def extract_delivery
-    self.delivery =  get_from_regex(/(BY MOUTH)|(SWALLOW (\w)+)/)
+    self.delivery = get_from_regex(/(BY MOUTH)|(SWALLOW (\w)+)/)
+
+    if not self.delivery.nil? and (self.delivery.include? "MOUTH" or self.delivery.include? "SWALLOW")
+      self.delivery = @@administrations[0]
+    end
   end
 
   def extract_drug_name
@@ -191,14 +225,21 @@ class Image
 
   private
 
-  def get_from_regex(r1)
-    puts "self.raw_text; #{self.raw_text.inspect}"
-    match = r1.match(self.raw_text)
+  def get_from_regex(r1, match_list=false)
+
+    raw_text_normalized = self.raw_text.upcase
+
+    puts "self.raw_text; #{raw_text_normalized.inspect}"
+    match = r1.match(raw_text_normalized)
 
     if !match
       return nil
     else
-      return match[0]
+      if match_list
+        return match
+      else
+        return match[0]
+      end
     end
   end
 
