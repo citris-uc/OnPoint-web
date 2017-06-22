@@ -186,11 +186,13 @@ class Image
 
     list_match = get_from_regex(units_regex, true)
 
-    self.amount = list_match[:amount]
+    if list_match.present?
+      self.amount = list_match[:amount]
 
-    if list_match[:unit].present?
-      match = @@units.find {|u| u[:for_match].downcase == list_match[:unit].downcase.strip}
-      self.units = match[:value] if match.present?
+      if list_match[:unit].present?
+        match = @@units.find {|u| u[:for_match].downcase == list_match[:unit].downcase.strip}
+        self.units = match[:value] if match.present?
+      end
     end
   end
 
