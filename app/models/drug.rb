@@ -64,6 +64,8 @@ class Drug
   #If that fails to retrieve an image try the first word of the name of the first scd match
   #We do at most 2 queries.
   def self.find_image_for_drugs(drugs, query_name)
+    return if drugs.blank?
+
     rximages_for_name = Drug.find_images_by_name(query_name)
     if rximages_for_name.present?
       drugs.map {|d| d[:image] = rximages_for_name[0]}
