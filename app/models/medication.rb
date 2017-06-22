@@ -33,6 +33,16 @@ class Medication < ActiveRecord::Base
     return firebase.get("patients/#{uid}/medications").body
   end
 
+  def self.get(uid, medication_id)
+    firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
+    return firebase.get("patients/#{uid}/medications/#{medication_id}").body
+  end
+
+  def self.update(uid, medication_id, data)
+    firebase = Firebase::Client.new(ENV["FIREBASE_URL"], ENV["FIREBASE_DATABASE_SECRET"])
+    return firebase.update("patients/#{uid}/medications/#{medication_id}", data)
+  end
+
   def self.find_ids_by_names(uid, trade_names)
     trade_names = trade_names.map {|tn| tn.downcase}
 

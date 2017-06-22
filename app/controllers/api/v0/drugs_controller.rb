@@ -29,8 +29,8 @@ class API::V0::DrugsController < API::V0::BaseController
   # GET /api/v0/drugs/rxcui?rxcui=...
   def rxcui
     @drug = Drug.new(params[:rxcui])
-    @drug.get_pill_images_via_rximage()
-    @drug.get_fda_information()
+    # @drug.get_pill_images_via_rximage()
+    # @drug.get_fda_information()
   end
 
   #----------------------------------------------------------------------------
