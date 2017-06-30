@@ -1,13 +1,23 @@
 # README
+## Introduction
+This app is primarily used in cases where direct access to Firebase does not make sense.
 
-### Understanding how Firebase works with Rails
-They don't have native admin support for Auth in Rails (Java or Node.js), but you can access the database using legacy keys.
+To get the app up and running, you will need a `config/application.yml` file.
+Because it contains sensitive information, this file is not in the git history.
+Ask Dmitri to share with you.
 
-This answer was the insight into the above: https://github.com/ktamas77/firebase-php/issues/42
+Once you've added the file, run `bundle install && bundle exec foreman start`.
 
-And here's a guide to setting up Admin SDK: https://firebase.google.com/docs/admin/setup
+The production web app is available at onpointhealth.herokuapp.com, lives on Heroku and is served by the `master` branch of `OnPoint-web` repo. It is managed
+by Dmitri (dmitriskj@gmail.com).
 
-### Verifying identity on Rails
+Please refer to README.md of `OnPoint` repo for any other information.
+
+## Understanding how Firebase works with Rails
+They don't have native admin support for Auth in Rails (Java or Node.js), but you can access the database using legacy keys. See [Firebase PHP](https://github.com/ktamas77/firebase-php/issues/42) on why, and here is a [guide on setting up Admin SDK](https://firebase.google.com/docs/admin/setup)
+
+
+## Verifying identity on Rails
 Firebase doesn't support native id verification, so we have to write our own
 JWT parser. Source: https://firebase.google.com/docs/auth/admin/verify-id-tokens
 
@@ -15,7 +25,7 @@ Here is a detailed setup on getting ID verification working with JWT + Rails:
 https://groups.google.com/forum/#!topic/firebase-talk/iefJWQ9LMQE
 
 
-### RxNorm
+## RxNorm
 Rx API is actually an API system of multiple systems:
 
 RxNorm - Main API for fetching various information about a drug
@@ -48,3 +58,7 @@ https://rximage.nlm.nih.gov/api/rximage/1/rxnav?rxcui=856999
 we expect the patient to be exposed to? Most likely SBD? To get an idea, simply visit https://mor.nlm.nih.gov/RxNav/search?searchBy=String&searchTerm=HYDROcodone and look at the right-hand side.
 3. Is it possible the dosage will go outside of a pre-defined branded drug dose? E.g. doctors manipulates the mg dosage (probably not).
 4. How can we leverage and use DailyMed?
+
+
+## OCR
+We use the `ocr_space` gem to extract pill bottle information. The gem uses Microsoft technology available in the [OCR.space API](https://ocr.space/).
