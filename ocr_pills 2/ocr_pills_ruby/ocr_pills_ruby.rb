@@ -1,6 +1,6 @@
 require 'ocr_space'
 
-resource = OcrSpace::Resource.new(apikey: "0ad729224588957")
+resource = OcrSpace::Resource.new(apikey: ENV["OCR_SPACE_API_KEY"])
 
 result_str = resource.clean_convert file: "/home/nduncan/Documents/ocr_pills/test7.jpg"
 
@@ -68,4 +68,3 @@ parsed_result['Frequency'] = get_freq_to_take(result_str)
 
 
 puts parsed_result
-

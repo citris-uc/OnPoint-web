@@ -32,7 +32,7 @@ class API::V0::ImagesController < API::V0::BaseController
     end
 
     # TODO: OCR space gem doesn't properly handle errors.
-    # resource   = OcrSpace::Resource.new(apikey: "0ad729224588957")
+    # resource   = OcrSpace::Resource.new(apikey: ENV["OCR_SPACE_API_KEY"])
     # result_str = resource.clean_convert file: file_path
 
     @image = Image.new(file_path)
